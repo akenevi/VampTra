@@ -12,4 +12,8 @@ public class Player extends Creature{
 	public long getScore(){
 		return score;
 	}
+	
+	public void update(){
+		
+	}
 }

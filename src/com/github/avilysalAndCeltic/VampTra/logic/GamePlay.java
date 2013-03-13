@@ -9,6 +9,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
 import com.github.avilysalAndCeltic.VampTra.utils.*;
+import com.github.avilysalAndCeltic.VampTra.entities.*;
 
 public class GamePlay {
 	//Class that starts everything up and is containing and handling all the game states
@@ -17,13 +18,17 @@ public class GamePlay {
 	private static State currentState;
 	private static String nextState = "";
 	private static Timer clock;
+	
+	//display opt
+	private static final int DW = 160;
+	private static final int DH = 120;
+	private static boolean isResizable = false;
+	private static boolean vSync = false;
 	private static int fps = 60;
-	private static Renderer rend;
-
-	public static final int DW = 800;
-	public static final int DH = 600;
 	
 	private static boolean gameExit = false;
+	
+	private static Player player;
 	
 	public static void main(String args[]){
 		InitGLandDisplay();
@@ -32,7 +37,15 @@ public class GamePlay {
 	
 	public static void gameLoop(){
 		while(!gameExit){
-			System.out.println("Current State: "+currentState);
+			if(Display.isCloseRequested()) currentState = State.EXIT_GAME;
+			
+			//for debugging purposes
+			State prevState = State.EXIT_GAME;
+			if (currentState == prevState)
+				System.out.println("Current State: "+currentState);
+			prevState = currentState;
+			
+			//updates
 			switch (currentState){
 				case INTRO:
 					clock = new Timer();
@@ -45,6 +58,7 @@ public class GamePlay {
 					com.github.avilysalAndCeltic.VampTra.logic.Trans.transite(nextState);
 					break;
 				case PAUSED:
+					clock.pause();
 					getInput();
 					break;
 				case MAIN_MENU:
@@ -52,12 +66,18 @@ public class GamePlay {
 					break;
 				case START_GAME:
 					if(clock.isPaused()) clock.resume();
+					
+					player = new Player("brawl");
+					//generate starting room
+					changeState("TURN");
 					break;
 				case GENERATE_ROOM:
+					changeState("TURN");
 					break;
 				case TURN:
 					Timer.tick();
 					getInput();
+					player.update();
 					// update stuff
 					changeState("TURN");
 					break;
@@ -71,39 +91,38 @@ public class GamePlay {
 					System.out.println("Exiting game");
 					break;
 			}
+			//clearing old stuff
 			glClear(GL_COLOR_BUFFER_BIT);
 			glLoadIdentity();
 			
-			//render
-			rend.createQuad(400, 300, 10, 0, 0, 0, 0.1f);
+			//render updated stuff
 			
-			System.out.println("update!");
-			Display.sync(fps);
+			//swap buffers, poll new input and finally autotune (Display.sync(fps)) Thread sleep to meet stated fps
 			Display.update();
+			Display.sync(fps);
 		}
 		CleanUp();
 	}
 	
 	public static void getInput(){
 		// for debugging purposes
-		System.out.println("Waiting for keyboard event");
-		int prevKey = 0;
+		// System.out.println("Waiting for keyboard event");
 		
-		while(!Keyboard.next() || Keyboard.getEventKey() == 0){
-			Display.update();
+		while(Keyboard.next()){
+			int key = 0;
+			if(Keyboard.getEventKeyState())
+				key = Keyboard.getEventKey();
 		
 			//for debugging purposes
-			int key = Keyboard.getEventKey();
-			if (key != 0 && key != prevKey){ 
+			if (key != 0){ 
 				System.out.println("Key pressed: "+Keyboard.getKeyName(key));
-				prevKey = key;
 			}
 			
 			switch(key){
 				case Keyboard.KEY_ESCAPE:
 					switch(currentState){
 						case PAUSED:
-							transiteState("MAIN_MENU");
+							transiteState("TURN");
 							break;
 						case MAIN_MENU:
 							transiteState("EXIT_GAME");
@@ -112,7 +131,6 @@ public class GamePlay {
 							transiteState("PAUSED");
 							break;
 						case GENERATE_ROOM:
-							transiteState("PAUSED");
 							break;
 						case GAME_OVER:
 							transiteState("HIGHSCORES");
@@ -124,10 +142,32 @@ public class GamePlay {
 					}
 					break;
 				case Keyboard.KEY_RETURN:
+					switch(currentState){
+						case MAIN_MENU:
+							String opt = com.github.avilysalAndCeltic.VampTra.logic.MainMenu.getState();
+							if(opt == "New Game") transiteState("START_GAME");
+					//		if(opt == "Load Game")
+					//		if(opt == "Options")
+							if(opt == "Exit Game") transiteState("EXIT_GAME");
+							break;
+						default:break;
+					}
 					break;
 				case Keyboard.KEY_UP:
+					switch(currentState){
+						case MAIN_MENU:
+							com.github.avilysalAndCeltic.VampTra.logic.MainMenu.changeState((byte) -1);
+							break;
+						default:break;
+					}
 					break;
 				case Keyboard.KEY_DOWN:
+					switch(currentState){
+					case MAIN_MENU:
+						com.github.avilysalAndCeltic.VampTra.logic.MainMenu.changeState((byte) 1);
+						break;
+					default:break;
+				}
 					break;
 				case Keyboard.KEY_LEFT:
 					break;
@@ -160,7 +200,6 @@ public class GamePlay {
 	private static void startGame(){
 		gameExit = false;
 		currentState = State.INTRO;
-		rend = new Renderer();
 		gameLoop();
 	}
 	
@@ -168,8 +207,8 @@ public class GamePlay {
 		try{
 			Display.setDisplayMode(new DisplayMode(DW,DH));
 			Display.create();
-			Display.setResizable(false);
-			Display.setVSyncEnabled(true);
+			Display.setResizable(isResizable);
+			Display.setVSyncEnabled(vSync);
 			Keyboard.create();
 		} catch (Exception e) {
 			System.err.println("Failed to create window");
