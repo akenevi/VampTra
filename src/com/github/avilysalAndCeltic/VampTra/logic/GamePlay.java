@@ -70,12 +70,12 @@ public class GamePlay {
 					getInput();
 					break;
 				case START_GAME:
-					if(clock.isPaused()) clock.resume();
 					
 					//player creation.. choosing perk, naming, ingame intro.
 					
 					player = new Player("brawl", "");
 					//generate starting room
+					if(clock.isPaused()) clock.resume();
 					transiteState("TURN");
 					break;
 				case GENERATE_ROOM:
@@ -190,14 +190,14 @@ public class GamePlay {
 	private static void render(){
 		preRender();
 		
-		text.drawString("Testing... 1, 2, 3... Hello there !", 10, DH-10);
-		
 		switch(currentState){
 			case MAIN_MENU:
-				text.drawString("New Game", 500, 90);
-				text.drawString("Load Game", 500, 75);
-				text.drawString("Options", 500, 60);
-				text.drawString("Exit Game", 500, 45);
+				MainMenu.render();
+				break;
+			case PAUSED:
+				text.drawString("Press ESQ to resume", (float)DW/2-(float)19/2*12, (float)DH/2+(float)1.5*16);
+				text.drawString("Press Enter to exit to Main Menu", (float)DW/2-(float)32/2*12, (float)DH/2+(float)0.5*16);
+				text.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)0.5*16, 0.5f);
 				break;
 			case TURN:
 				player.render();

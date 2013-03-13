@@ -9,20 +9,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Random;
 
 import org.lwjgl.BufferUtils;
+
+// got to study a bit about FBO and improve the whole class
+// not sure why font is rendering not as supposed... (missing bits and pieces)
 
 public class Renderer {
 	private HashMap<String, Sprite> spriteMap;
 	private final String fontLocation = "res/pixfont-bold.png"; //http://opengameart.org/content/16x12-terminal-bitmap-font
 	private Sprite curSprite;
 	private int tex;
+	Random random;
 	
 	public Renderer(String location){
 		if(location == "font")
 			initSprites(fontLocation);
 		else if(location != "")
 			initSprites(location);
+		random = new Random(System.nanoTime());
 	}
 	
 	public void createQuad(float x, float y, float s){
@@ -57,7 +63,7 @@ public class Renderer {
 		drawSprite(name, x, y, h, w, 0, false);
 	}
 	
-	public void drawSprite(String name, float x, float y, int w, int h, int rotate){
+	public void drawSpriter(String name, float x, float y, int w, int h, int rotate){
 		drawSprite(name, x, y, h, w, rotate, false);
 	}
 
@@ -93,12 +99,25 @@ public class Renderer {
 		glPopMatrix();
 	}
 	
+	public void drawShakingString(String string, float x, float y, float magnitude){
+		float deltax = random.nextFloat()*magnitude;
+		float deltay = random.nextFloat()*magnitude;
+		if(random.nextBoolean())
+			deltax *= -1;
+		if(random.nextBoolean())
+			deltay *= -1;
+		drawString(string, deltax+x, deltay+y);
+	}
+	
 	public void drawString(String string, float x, float y){
 		char[] charArray = string.toCharArray();
 		int j=0;
 		for(char i : charArray){
 			String name = Character.toString(i);
-			drawSprite(name, (j*10)+x, y, 12, 16, 0, false);
+			if(i == 'j') y -= 1;
+			if(i == 'g') y -= 3;
+			if(i == 'p' || i == 'q') y -= 2;
+			drawSprite(name, (j*12)+x, y, 12, 16);
 			j++;    
 		}
 	}
@@ -200,8 +219,7 @@ public class Renderer {
 			spriteMap.put("y", new Sprite("y", 9*12, 5*16, 12, 16));
 			spriteMap.put("z", new Sprite("z", 10*12, 5*16, 12, 16));
 		}
-		// create sprite map usind method below
-		// upper left corner of SpriteSheet == (0,0)
+		// create sprite map usind method below, upper left corner of SpriteSheet == (0,0)
 		// spriteMap.put("key name", new Sprite("sprite name", x, y, size x, size y));
 		
 		
