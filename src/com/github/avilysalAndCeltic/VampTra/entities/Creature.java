@@ -1,8 +1,10 @@
 package com.github.avilysalAndCeltic.VampTra.entities;
 
 public abstract class Creature {
-	private float x,y;
-	private String[] skills = new String[9];
+	protected String name;
+	protected String type;
+	protected float x,y;
+	protected String[] skills = new String[9];
 	private byte[][] proficiency = new byte[4][5];
 	
 	public float getX(){

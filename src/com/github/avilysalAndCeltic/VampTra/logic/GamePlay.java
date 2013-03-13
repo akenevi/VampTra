@@ -8,26 +8,29 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
-import com.github.avilysalAndCeltic.VampTra.utils.*;
 import com.github.avilysalAndCeltic.VampTra.entities.*;
+import com.github.avilysalAndCeltic.VampTra.utils.Renderer;
 
 public class GamePlay {
-	//Class that starts everything up and is containing and handling all the game states
-	
+	//state related stuff
 	private enum State {INTRO, TRANSITION, PAUSED, MAIN_MENU, START_GAME, GENERATE_ROOM, TURN, GAME_OVER, HIGHSCORES, EXIT_GAME};
 	private static State currentState;
 	private static String nextState = "";
+	
+	//for updating entities ? dunno yet
 	private static Timer clock;
 	
 	//display opt
-	private static final int DW = 160;
-	private static final int DH = 120;
+	private static final int DW = 640;
+	private static final int DH = 480;
 	private static boolean isResizable = false;
-	private static boolean vSync = false;
+	private static boolean vSync = true;
 	private static int fps = 60;
 	
 	private static boolean gameExit = false;
 	
+	public static Renderer rend;
+	public static Renderer text;
 	private static Player player;
 	
 	public static void main(String args[]){
@@ -36,6 +39,9 @@ public class GamePlay {
 	}
 	
 	public static void gameLoop(){
+		text = new Renderer("font");
+		rend = new Renderer("");
+		clock = new Timer();
 		while(!gameExit){
 			if(Display.isCloseRequested()) currentState = State.EXIT_GAME;
 			
@@ -48,7 +54,6 @@ public class GamePlay {
 			//updates
 			switch (currentState){
 				case INTRO:
-					clock = new Timer();
 					clock.pause();
 					clock.set(0.0f);
 					com.github.avilysalAndCeltic.VampTra.logic.Intro.InitIntro();
@@ -67,9 +72,11 @@ public class GamePlay {
 				case START_GAME:
 					if(clock.isPaused()) clock.resume();
 					
-					player = new Player("brawl");
+					//player creation.. choosing perk, naming, ingame intro.
+					
+					player = new Player("brawl", "");
 					//generate starting room
-					changeState("TURN");
+					transiteState("TURN");
 					break;
 				case GENERATE_ROOM:
 					changeState("TURN");
@@ -77,9 +84,7 @@ public class GamePlay {
 				case TURN:
 					Timer.tick();
 					getInput();
-					player.update();
 					// update stuff
-					changeState("TURN");
 					break;
 				case GAME_OVER:
 					break;
@@ -87,19 +92,12 @@ public class GamePlay {
 					break;
 				case EXIT_GAME:
 					gameExit = true;
-					//time to save thing that need saving
+					//time to save things that need saving
 					System.out.println("Exiting game");
 					break;
 			}
-			//clearing old stuff
-			glClear(GL_COLOR_BUFFER_BIT);
-			glLoadIdentity();
-			
-			//render updated stuff
-			
-			//swap buffers, poll new input and finally autotune (Display.sync(fps)) Thread sleep to meet stated fps
-			Display.update();
-			Display.sync(fps);
+			render();
+		//	System.out.println("update!");
 		}
 		CleanUp();
 	}
@@ -150,6 +148,9 @@ public class GamePlay {
 					//		if(opt == "Options")
 							if(opt == "Exit Game") transiteState("EXIT_GAME");
 							break;
+						case PAUSED:
+							transiteState("MAIN_MENU");
+							break;
 						default:break;
 					}
 					break;
@@ -180,12 +181,45 @@ public class GamePlay {
 		}
 	}
 	
+	private static void preRender(){
+		//clearing old stuff
+		glClear(GL_COLOR_BUFFER_BIT);
+		glLoadIdentity();
+	}
+	
+	private static void render(){
+		preRender();
+		
+		text.drawString("Testing... 1, 2, 3... Hello there !", 10, DH-10);
+		
+		switch(currentState){
+			case MAIN_MENU:
+				text.drawString("New Game", 500, 90);
+				text.drawString("Load Game", 500, 75);
+				text.drawString("Options", 500, 60);
+				text.drawString("Exit Game", 500, 45);
+				break;
+			case TURN:
+				player.render();
+				break;
+			default:break;
+		}
+		
+		{	//swap buffers, poll new input and finally autotune (Display.sync(fps)) Thread sleep to meet stated fps
+			Display.update();
+			Display.sync(fps);
+		}
+	}
+	
 	public static void transiteState(String newState){
 		currentState = State.TRANSITION;
 		nextState = newState;
 	}
 	
 	public static void changeState(String newState){
+		//for debugging
+		System.out.println("Now entering: "+ newState + " state");
+		
 		if (newState=="TRANSITION") currentState = State.TRANSITION;
 		if (newState=="PAUSED") currentState = State.PAUSED;
 		if (newState=="MAIN_MENU") currentState = State.MAIN_MENU;

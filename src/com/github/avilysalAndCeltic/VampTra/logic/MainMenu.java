@@ -18,4 +18,8 @@ public class MainMenu {
 		if(s==4) {state = "Exit Game";}
 		System.out.println(state);
 	}
+	
+	public static void render(){
+		
+	}
 }
