@@ -1,18 +1,18 @@
 TO DO LIST
 (u - under work, d - done)
 
--pixel blending options
--room generation from templates
--player actions (movement mainly, basics for attack / defence)
--enemies
--combat (turn based)
--skills
--sound
--font (proper font)
--UI
--art
--Mouse controls
--Save game / Load game (with encryption, deletion on loosing)
--Options (music and sound volume, resolution, desired fps, key bindings, anything else?)
-
--QA
+ -pixel blending options
+d-room generation from templates
+u-player actions (movement mainly, basics for attack / defence)
+ -enemies
+ -combat (turn based)
+ -skills
+ -sound
+u-font (proper font)
+ -UI
+ -art
+ -Mouse controls
+ -Save game / Load game (with encryption, deletion on loosing)
+ -Options (music and sound volume, resolution, desired fps, key bindings, anything else?)
+ 
+ -QA

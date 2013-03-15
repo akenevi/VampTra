@@ -9,6 +9,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
 import com.github.avilysalAndCeltic.VampTra.entities.*;
+import com.github.avilysalAndCeltic.VampTra.map.Map;
 import com.github.avilysalAndCeltic.VampTra.utils.Renderer;
 
 public class GamePlay {
@@ -21,8 +22,8 @@ public class GamePlay {
 	private static Timer clock;
 	
 	//display opt
-	private static final int DW = 640;
-	private static final int DH = 480;
+	public static final int DW = 640;
+	public static final int DH = 480;
 	private static boolean isResizable = false;
 	private static boolean vSync = true;
 	private static int fps = 60;
@@ -31,6 +32,7 @@ public class GamePlay {
 	
 	public static Renderer rend;
 	public static Renderer text;
+	private static Map map;
 	private static Player player;
 	
 	public static void main(String args[]){
@@ -41,6 +43,7 @@ public class GamePlay {
 	public static void gameLoop(){
 		text = new Renderer("font");
 		rend = new Renderer("");
+		map = new Map();
 		clock = new Timer();
 		while(!gameExit){
 			if(Display.isCloseRequested()) currentState = State.EXIT_GAME;
@@ -74,7 +77,7 @@ public class GamePlay {
 					//player creation.. choosing perk, naming, ingame intro.
 					
 					player = new Player("brawl", "");
-					//generate starting room
+					map.makeEntrance();
 					if(clock.isPaused()) clock.resume();
 					transiteState("TURN");
 					break;
@@ -159,22 +162,43 @@ public class GamePlay {
 						case MAIN_MENU:
 							com.github.avilysalAndCeltic.VampTra.logic.MainMenu.changeState((byte) -1);
 							break;
+						case TURN:
+							player.move("y", 10);
+							break;
 						default:break;
 					}
 					break;
 				case Keyboard.KEY_DOWN:
 					switch(currentState){
-					case MAIN_MENU:
-						com.github.avilysalAndCeltic.VampTra.logic.MainMenu.changeState((byte) 1);
-						break;
-					default:break;
-				}
+						case MAIN_MENU:
+							com.github.avilysalAndCeltic.VampTra.logic.MainMenu.changeState((byte) 1);
+							break;
+						case TURN:
+							player.move("y", -10);
+							break;
+						default:break;
+					}
 					break;
 				case Keyboard.KEY_LEFT:
+					switch(currentState){
+						case TURN:
+							player.move("x", -10);
+							break;
+						default:break;
+					}
 					break;
 				case Keyboard.KEY_RIGHT:
+					switch(currentState){
+						case TURN:
+							player.move("x", 10);
+							break;
+						default:break;
+					}
 					break;
 				case Keyboard.KEY_SPACE:
+					switch(currentState){
+						default:break;
+					}
 					break;
 				default:break;
 			}
@@ -200,6 +224,7 @@ public class GamePlay {
 				text.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)0.5*16, 0.5f);
 				break;
 			case TURN:
+				map.render();
 				player.render();
 				break;
 			default:break;

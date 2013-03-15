@@ -20,6 +20,14 @@ public class Player extends Creature{
 	public void update(){
 		
 	}
+	public void move(String axis, int amount){
+		move(axis, (float)amount);
+	}
+	
+	public void move(String axis, float amount){
+		if(axis=="x") x+=amount;
+		if(axis=="y") y+=amount;
+	}
 	
 	public void render(){
 		com.github.avilysalAndCeltic.VampTra.logic.GamePlay.rend.createQuad(x, y, 10f);

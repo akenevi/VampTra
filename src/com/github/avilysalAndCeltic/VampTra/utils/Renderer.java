@@ -59,6 +59,10 @@ public class Renderer {
 		glPopMatrix();
 	}
 	
+	public void drawChar(char ch, float x, float y){
+		drawSprite(Character.toString(ch), x, y, 16, 12, 0, false);
+	}
+	
 	public void drawSprite(String name, float x, float y, int w, int h){
 		drawSprite(name, x, y, h, w, 0, false);
 	}
@@ -67,6 +71,7 @@ public class Renderer {
 		drawSprite(name, x, y, h, w, rotate, false);
 	}
 
+	//draws given sprite centered at given coordinates
 	public void drawSprite(String name, float x, float y, int w, int h, int rotate, boolean reverseMap) {
 		curSprite = spriteMap.get(name);
 		int u = curSprite.x;

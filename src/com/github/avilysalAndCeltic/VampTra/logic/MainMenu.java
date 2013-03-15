@@ -23,19 +23,19 @@ public class MainMenu {
 	}
 	
 	public static void render(){
-		if(com.github.avilysalAndCeltic.VampTra.logic.MainMenu.getState() == "New Game")
+		if(getState() == "New Game")
 			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawShakingString("New Game", posX, posY+48, shakingMagnitudeMultiplyer);
 		else
 			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawString("New Game", posX, posY+48);
-		if(com.github.avilysalAndCeltic.VampTra.logic.MainMenu.getState() == "Load Game")
+		if(getState() == "Load Game")
 			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawShakingString("Load Game", posX, posY+32, shakingMagnitudeMultiplyer);
 		else
 			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawString("Load Game", posX, posY+32);
-		if(com.github.avilysalAndCeltic.VampTra.logic.MainMenu.getState() == "Options")
+		if(getState() == "Options")
 			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawShakingString("Options", posX, posY+16, shakingMagnitudeMultiplyer);
 		else
 			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawString("Options", posX, posY+16);
-		if(com.github.avilysalAndCeltic.VampTra.logic.MainMenu.getState() == "Exit Game")
+		if(getState() == "Exit Game")
 			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawShakingString("Exit Game", posX, posY, shakingMagnitudeMultiplyer);
 		else
 			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawString("Exit Game", posX, posY);
