@@ -1,11 +1,9 @@
 package com.github.avilysalAndCeltic.VampTra.entities;
 
-public abstract class Item {
+public abstract class Item extends Entity{
 
 	 protected float damage;
 	 protected float durability;
-	 protected String type;
-	 protected String name;
 	 
 	 public float getDamage(){
 		 return damage;

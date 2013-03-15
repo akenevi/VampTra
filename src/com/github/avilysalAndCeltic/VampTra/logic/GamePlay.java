@@ -163,7 +163,7 @@ public class GamePlay {
 							com.github.avilysalAndCeltic.VampTra.logic.MainMenu.changeState((byte) -1);
 							break;
 						case TURN:
-							player.move("y", 10);
+							player.move("y", 16);
 							break;
 						default:break;
 					}
@@ -174,7 +174,7 @@ public class GamePlay {
 							com.github.avilysalAndCeltic.VampTra.logic.MainMenu.changeState((byte) 1);
 							break;
 						case TURN:
-							player.move("y", -10);
+							player.move("y", -16);
 							break;
 						default:break;
 					}
@@ -182,7 +182,7 @@ public class GamePlay {
 				case Keyboard.KEY_LEFT:
 					switch(currentState){
 						case TURN:
-							player.move("x", -10);
+							player.move("x", -16);
 							break;
 						default:break;
 					}
@@ -190,7 +190,7 @@ public class GamePlay {
 				case Keyboard.KEY_RIGHT:
 					switch(currentState){
 						case TURN:
-							player.move("x", 10);
+							player.move("x", 16);
 							break;
 						default:break;
 					}

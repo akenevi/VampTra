@@ -21,7 +21,7 @@ public class Renderer {
 	private final String fontLocation = "res/pixfont-bold.png"; //http://opengameart.org/content/16x12-terminal-bitmap-font
 	private Sprite curSprite;
 	private int tex;
-	Random random;
+	public Random random;
 	
 	public Renderer(String location){
 		if(location == "font")

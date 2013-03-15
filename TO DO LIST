@@ -2,8 +2,8 @@ TO DO LIST
 (u - under work, d - done)
 
  -pixel blending options
-d-room generation from templates
-u-player actions (movement mainly, basics for attack / defence)
+d-room generation from templates (rendering as characters for now, no collision / obstacles yet)
+u-player actions (movement mainly, basics for attack / defense)
  -enemies
  -combat (turn based)
  -skills
