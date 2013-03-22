@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 public abstract class Creature extends Entity{
 	protected ArrayList <String> skills;
+	//equipped = "r hand", "l hand", "armor"  for now..
+	protected String[] equipped = {"none","none","none"};
 	protected boolean hasShield = false;
 	protected byte armor = 0;
 	protected byte shield = 0;
@@ -33,7 +35,7 @@ public abstract class Creature extends Entity{
 				// inform about happened miss
 			}
 		} else {
-			byte block = getProf("block");
+			int block = getProf("block");
 			if(c.hasShield())
 				block += c.getProf("shiled");
 			if(com.github.avilysalAndCeltic.VampTra.logic.GamePlay.rend.random.nextInt(100) > 100-block){

@@ -1,4 +1,4 @@
-TO DO LIST
+TO DO LIST:
 (u - under work, d - done)
 
  -pixel blending options
@@ -16,3 +16,12 @@ u-font (proper font)
  -Options (music and sound volume, resolution, desired fps, key bindings, anything else?)
  
  -QA
+ 
+ 
+ STORY:
+ Create a paradox, where player is either the one who turns the player or it's his future diciple who turns the player.
+ Bits and pieces of story are handed out on stairs that lead to next level. (It's a message from the one who turned directly, in form of dialog
+ or a note).
+ player is given 5 options of reaction to the dialog, 2 good, 1 neutral, 2 bad.
+ 
+ More will be figured out later.

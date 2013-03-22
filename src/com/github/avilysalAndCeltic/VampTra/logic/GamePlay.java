@@ -22,8 +22,8 @@ public class GamePlay {
 	private static Timer clock;
 	
 	//display opt
-	public static final int DW = 640;
-	public static final int DH = 480;
+	public static final int DW = 800;
+	public static final int DH = 600;
 	private static boolean isResizable = false;
 	private static boolean vSync = true;
 	private static int fps = 60;
@@ -32,8 +32,8 @@ public class GamePlay {
 	
 	public static Renderer rend;
 	public static Renderer text;
-	private static Map map;
-	private static Player player;
+	public static Map map;
+	public static Player player;
 	
 	public static void main(String args[]){
 		InitGLandDisplay();
@@ -43,7 +43,6 @@ public class GamePlay {
 	public static void gameLoop(){
 		text = new Renderer("font");
 		rend = new Renderer("");
-		map = new Map();
 		clock = new Timer();
 		while(!gameExit){
 			if(Display.isCloseRequested()) currentState = State.EXIT_GAME;
@@ -59,11 +58,11 @@ public class GamePlay {
 				case INTRO:
 					clock.pause();
 					clock.set(0.0f);
-					com.github.avilysalAndCeltic.VampTra.logic.Intro.InitIntro();
+					Intro.InitIntro();
 					transiteState("MAIN_MENU");
 					break;
 				case TRANSITION:
-					com.github.avilysalAndCeltic.VampTra.logic.Trans.transite(nextState);
+					Trans.transite(nextState);
 					break;
 				case PAUSED:
 					clock.pause();
@@ -73,13 +72,8 @@ public class GamePlay {
 					getInput();
 					break;
 				case START_GAME:
-					
 					//player creation.. choosing perk, naming, ingame intro.
-					
-					player = new Player("brawl", "");
-					map.makeEntrance();
-					if(clock.isPaused()) clock.resume();
-					transiteState("TURN");
+					getInput();
 					break;
 				case GENERATE_ROOM:
 					changeState("TURN");
@@ -128,6 +122,9 @@ public class GamePlay {
 						case MAIN_MENU:
 							transiteState("EXIT_GAME");
 							break;
+						case START_GAME:
+							transiteState("MAIN_MENU");
+							break;
 						case TURN:
 							transiteState("PAUSED");
 							break;
@@ -145,13 +142,22 @@ public class GamePlay {
 				case Keyboard.KEY_RETURN:
 					switch(currentState){
 						case MAIN_MENU:
-							String opt = com.github.avilysalAndCeltic.VampTra.logic.MainMenu.getState();
+							String opt = MainMenu.getState();
 							if(opt == "New Game") transiteState("START_GAME");
 					//		if(opt == "Load Game")
 					//		if(opt == "Options")
 							if(opt == "Exit Game") transiteState("EXIT_GAME");
 							break;
+						case START_GAME:
+							map = new Map();
+							map.makeEntrance();
+							player = new Player(GameStart.getState());
+							if(clock.isPaused()) clock.resume();
+							transiteState("TURN");
+							break;
 						case PAUSED:
+							player = null;
+							map = null;
 							transiteState("MAIN_MENU");
 							break;
 						default:break;
@@ -160,10 +166,13 @@ public class GamePlay {
 				case Keyboard.KEY_UP:
 					switch(currentState){
 						case MAIN_MENU:
-							com.github.avilysalAndCeltic.VampTra.logic.MainMenu.changeState((byte) -1);
+							MainMenu.changeState((byte) -1);
+							break;
+						case START_GAME:
+							GameStart.changeState((byte) -1);
 							break;
 						case TURN:
-							player.move("y", 16);
+							map.changeOffset("y", -16);
 							break;
 						default:break;
 					}
@@ -171,10 +180,13 @@ public class GamePlay {
 				case Keyboard.KEY_DOWN:
 					switch(currentState){
 						case MAIN_MENU:
-							com.github.avilysalAndCeltic.VampTra.logic.MainMenu.changeState((byte) 1);
+							MainMenu.changeState((byte) 1);
+							break;
+						case START_GAME:
+							GameStart.changeState((byte) 1);
 							break;
 						case TURN:
-							player.move("y", -16);
+							map.changeOffset("y", 16);
 							break;
 						default:break;
 					}
@@ -182,7 +194,7 @@ public class GamePlay {
 				case Keyboard.KEY_LEFT:
 					switch(currentState){
 						case TURN:
-							player.move("x", -16);
+							map.changeOffset("x", 16);
 							break;
 						default:break;
 					}
@@ -190,7 +202,7 @@ public class GamePlay {
 				case Keyboard.KEY_RIGHT:
 					switch(currentState){
 						case TURN:
-							player.move("x", 16);
+							map.changeOffset("x", -16);
 							break;
 						default:break;
 					}
@@ -218,10 +230,13 @@ public class GamePlay {
 			case MAIN_MENU:
 				MainMenu.render();
 				break;
+			case START_GAME:
+				GameStart.render();
+				break;
 			case PAUSED:
-				text.drawString("Press ESQ to resume", (float)DW/2-(float)19/2*12, (float)DH/2+(float)1.5*16);
-				text.drawString("Press Enter to exit to Main Menu", (float)DW/2-(float)32/2*12, (float)DH/2+(float)0.5*16);
-				text.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)0.5*16, 0.5f);
+				text.drawString("Press ESQ to resume", (float)DW/2-(float)19/2*12, (float)DH/2+(float)2*16);
+				text.drawString("Press Enter to exit to Main Menu", (float)DW/2-(float)32/2*12, (float)DH/2+(float)0*16);
+				text.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)3*16, 0.7f);
 				break;
 			case TURN:
 				map.render();

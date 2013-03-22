@@ -14,7 +14,6 @@ import java.util.Random;
 import org.lwjgl.BufferUtils;
 
 // got to study a bit about FBO and improve the whole class
-// not sure why font is rendering not as supposed... (missing bits and pieces)
 
 public class Renderer {
 	private HashMap<String, Sprite> spriteMap;
@@ -32,14 +31,14 @@ public class Renderer {
 	}
 	
 	public void createQuad(float x, float y, float s){
-		createQuad(x,y,s,1f,1f,1f,0);
+		createQuad(x,y,s,1f,1f,1f,1f,0);
 	}
 	
-	public void reateQuad(float x, float y, float s, float r, float g, float b){
-		createQuad(x,y,s,r,g,b,0);
+	public void createQuad(float x, float y, float s, float r, float g, float b, float a){
+		createQuad(x,y,s,r,g,b,a,0);
 	}
 	
-	public void createQuad(float x, float y, float s, float r, float g, float b, float rot){
+	public void createQuad(float x, float y, float s, float r, float g, float b, float a, float rot){
 		float hs = s/2;
 		glPushMatrix();
 		{
@@ -48,7 +47,7 @@ public class Renderer {
 			
 			glBegin(GL_QUADS);
 			{
-				glColor3f(r,g,b);
+				glColor4f(r,g,b,a);
 				glVertex2f(-hs,-hs);
 				glVertex2f(hs,-hs);
 				glVertex2f(hs,hs);
@@ -60,15 +59,15 @@ public class Renderer {
 	}
 	
 	public void drawChar(char ch, float x, float y){
-		drawSprite(Character.toString(ch), x, y, 16, 12, 0, false);
+		drawSprite(Character.toString(ch), x, y, 12, 16, 0, false);
 	}
 	
 	public void drawSprite(String name, float x, float y, int w, int h){
-		drawSprite(name, x, y, h, w, 0, false);
+		drawSprite(name, x, y, w, h, 0, false);
 	}
 	
 	public void drawSpriter(String name, float x, float y, int w, int h, int rotate){
-		drawSprite(name, x, y, h, w, rotate, false);
+		drawSprite(name, x, y, w, h, rotate, false);
 	}
 
 	//draws given sprite centered at given coordinates
@@ -88,6 +87,7 @@ public class Renderer {
 		
 		glTranslatef(x,y,0);
 		glRotatef(rotate,0,0,1);
+		glColor3f(1f,1f,1f);
 		
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, tex);
 		{
@@ -117,12 +117,14 @@ public class Renderer {
 	public void drawString(String string, float x, float y){
 		char[] charArray = string.toCharArray();
 		int j=0;
+		float tempY;
 		for(char i : charArray){
 			String name = Character.toString(i);
-			if(i == 'j') y -= 1;
-			if(i == 'g') y -= 3;
-			if(i == 'p' || i == 'q') y -= 2;
-			drawSprite(name, (j*12)+x, y, 12, 16);
+			if(i == 'j') tempY = y-1;
+			else if(i == 'g') tempY = y-2;
+			else if(i == 'p' || i == 'q') tempY = y-2;
+			else tempY = y;
+			drawSprite(name, (j*12)+x, tempY, 12, 16);
 			j++;    
 		}
 	}
