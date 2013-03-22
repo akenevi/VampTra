@@ -15,7 +15,7 @@ import com.github.avilysalAndCeltic.VampTra.utils.Renderer;
 public class GamePlay {
 	//state related stuff
 	private enum State {INTRO, TRANSITION, PAUSED, MAIN_MENU, START_GAME, GENERATE_ROOM, TURN, GAME_OVER, HIGHSCORES, EXIT_GAME};
-	private static State currentState;
+	private static State currentState, prevState, nState;
 	private static String nextState = "";
 	
 	//for updating entities ? dunno yet
@@ -46,12 +46,6 @@ public class GamePlay {
 		clock = new Timer();
 		while(!gameExit){
 			if(Display.isCloseRequested()) currentState = State.EXIT_GAME;
-			
-			//for debugging purposes
-			State prevState = State.EXIT_GAME;
-			if (currentState == prevState)
-				System.out.println("Current State: "+currentState);
-			prevState = currentState;
 			
 			//updates
 			switch (currentState){
@@ -227,6 +221,9 @@ public class GamePlay {
 		preRender();
 		
 		switch(currentState){
+			case TRANSITION:
+				transRender();
+				break;
 			case MAIN_MENU:
 				MainMenu.render();
 				break;
@@ -251,9 +248,46 @@ public class GamePlay {
 		}
 	}
 	
+	private static void transRender(){
+		State temp; 
+		if (Trans.getMid()) temp = nState;
+		else temp = prevState;
+		
+		switch(temp){
+			case MAIN_MENU:
+				MainMenu.render();
+				break;
+			case START_GAME:
+				GameStart.render();
+				break;
+			case PAUSED:
+				text.drawString("Press ESQ to resume", (float)DW/2-(float)19/2*12, (float)DH/2+(float)2*16);
+				text.drawString("Press Enter to exit to Main Menu", (float)DW/2-(float)32/2*12, (float)DH/2+(float)0*16);
+				text.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)3*16, 0.7f);
+				break;
+			case TURN:
+				map.render();
+				player.render();
+				break;
+			default:break;
+		}
+		
+		Trans.render();
+	}
+	
 	public static void transiteState(String newState){
+		prevState = currentState;
 		currentState = State.TRANSITION;
+		if (newState=="PAUSED") nState = State.PAUSED;
+		else if (newState=="MAIN_MENU") nState = State.MAIN_MENU;
+		else if (newState=="START_GAME") nState = State.START_GAME;
+		else if (newState=="GENERATE_ROOM") nState = State.GENERATE_ROOM;
+		else if (newState=="TURN") nState = State.TURN;
+		else if (newState=="GAME_OVER") nState = State.GAME_OVER;
+		else if (newState=="HIGHSCORES") nState = State.HIGHSCORES;
+		else if (newState=="EXIT_GAME") nState = State.EXIT_GAME;
 		nextState = newState;
+		Trans.reset();
 	}
 	
 	public static void changeState(String newState){
@@ -274,6 +308,7 @@ public class GamePlay {
 	private static void startGame(){
 		gameExit = false;
 		currentState = State.INTRO;
+		prevState = State.INTRO;
 		gameLoop();
 	}
 	

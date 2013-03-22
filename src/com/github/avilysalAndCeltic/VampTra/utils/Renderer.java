@@ -31,15 +31,20 @@ public class Renderer {
 	}
 	
 	public void createQuad(float x, float y, float s){
-		createQuad(x,y,s,1f,1f,1f,1f,0);
+		createQuad(x,y,s,s,1f,1f,1f,1f,0);
 	}
 	
 	public void createQuad(float x, float y, float s, float r, float g, float b, float a){
-		createQuad(x,y,s,r,g,b,a,0);
+		createQuad(x,y,s,s,r,g,b,a,0);
 	}
 	
-	public void createQuad(float x, float y, float s, float r, float g, float b, float a, float rot){
-		float hs = s/2;
+	public void createQuad(float x, float y, float w, float h, float r, float g, float b, float a){
+		createQuad(x,y,w,h,r,g,b,a,0);
+	}
+	
+	public void createQuad(float x, float y, float w, float h, float r, float g, float b, float a, float rot){
+		float hh = h/2;
+		float hw = w/2;
 		glPushMatrix();
 		{
 			glTranslatef(x, y, 0);
@@ -48,10 +53,10 @@ public class Renderer {
 			glBegin(GL_QUADS);
 			{
 				glColor4f(r,g,b,a);
-				glVertex2f(-hs,-hs);
-				glVertex2f(hs,-hs);
-				glVertex2f(hs,hs);
-				glVertex2f(-hs,hs);
+				glVertex2f(-hw,-hh);
+				glVertex2f(hw,-hh);
+				glVertex2f(hw,hh);
+				glVertex2f(-hw,hh);
 			}
 			glEnd();
 		}
