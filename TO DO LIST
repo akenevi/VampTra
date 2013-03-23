@@ -1,7 +1,11 @@
 TO DO LIST:
 (u - under work, d - done)
 
- -pixel blending options
+randomize room type upon generation
+change room type of room that are being expanded into to the type of the room expanding
+bind room type to tile before / upon unloading 'em into returning floor map
+
+d-pixel blending options (kinda)
 u-room generation from templates (rendering as characters for now, no collision / obstacles yet)
 u-player actions (movement done, basics melee for attack / defense done in creature class)
  -enemies

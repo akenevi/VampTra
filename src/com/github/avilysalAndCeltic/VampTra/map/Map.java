@@ -10,7 +10,7 @@ public class Map{
 	private float[] offsX, offsY;
 	
 	public Map(){
-		makeEntrance();
+		map = new Node[10][0][0];
 		map[0] = floorGenerator.generateFloor(); //generate first floor
 		offsX = new float[10];
 		offsY = new float[10];
@@ -22,39 +22,22 @@ public class Map{
 		offsY[0] -= map[0][0].length/2*16;
 	}
 	
-	public void makeEntrance(){
-//		map = new Node[10][7][7];
-		map = new Node[10][0][0];
-/*		char name, dir;
-		for(int i=0; i<map[0].length; i++)
-			for(int j=0; j<map[0][i].length; j++){
-				name = 'f'; dir = ' ';
-				if(i==0 || i==6) name = 'w';
-				if (j==0 || j==6) name = 'w';
-				if (i==0 && j==3) {name = 'd'; dir = 'n';}
-				if (i==6 && j==3) {name = 'd'; dir = 's';}
-				if (i==3 && j==0) {name = 'd'; dir = 'w';}
-				if (i==3 && j==6) {name = 'd'; dir = 'e';}
-				map[0][i][j] = new Node(i*16,j*16,name,dir);
-			}
-*/	}
-	
 	public boolean changeOffset(int floor, String axis, float amount){
 		float px = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.player.getX(); //400  offs initially 352
 		float py = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.player.getY(); //300  offs initially 252
 		for(Node[] row : map[floor]){
 			for(Node n : row){
-				if(axis == "x" && n.y+offsY[floor]==py){
-//					if(n.x+offsX[floor]==px-amount && n.passable){
+				if(axis == "x" && n.getY()+offsY[floor]==py){
+					if(n.getX()+offsX[floor]==px-amount && n.isPassable()){
 						offsX[floor]+=amount;
 						return true;
-//					}
+					}
 				}
-				if(axis == "y" && n.x+offsX[floor]==px){
-//					if(n.y+offsY[floor]==py-amount && n.passable){
+				if(axis == "y" && n.getX()+offsX[floor]==px){
+					if(n.getY()+offsY[floor]==py-amount && n.isPassable()){
 						offsY[floor]+=amount;
 						return true;
-//					}
+					}
 				}
 			}
 		}
@@ -64,14 +47,14 @@ public class Map{
 	public void render(int floor){
 		for(Node[] row : map[floor]){
 			for(Node n : row){
-				if(	offsX[floor]+n.x<com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DW && 
-					offsY[floor]+n.y<com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DH &&
-					offsX[floor]+n.x>0 && 
-					offsY[floor]+n.y>0)
+				if(	offsX[floor]+n.getX()<com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DW && 
+					offsY[floor]+n.getY()<com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DH &&
+					offsX[floor]+n.getX()>0 && 
+					offsY[floor]+n.getY()>0)
 				{
-					com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawChar(n.name, n.x+offsX[floor], n.y+offsY[floor]);
-					if(n.name=='w')
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.x+offsX[floor], n.y+offsY[floor], 16f, 1f, .1f, .1f, .4f);
+					com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawChar(n.getName(), n.getX()+offsX[floor], n.getY()+offsY[floor]);
+					if(n.getName()=='w')
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor], n.getY()+offsY[floor], 16f, 1f, .1f, .1f, .4f);
 				}
 			}
 		}

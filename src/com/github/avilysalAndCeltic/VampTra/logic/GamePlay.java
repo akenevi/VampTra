@@ -46,12 +46,10 @@ public class GamePlay {
 		clock = new Timer();
 		while(!gameExit){
 			if(Display.isCloseRequested()) currentState = State.EXIT_GAME;
-			
+			Timer.tick();
 			//updates
 			switch (currentState){
 				case INTRO:
-					clock.pause();
-					clock.set(0.0f);
 					Intro.InitIntro();
 					transiteState("MAIN_MENU");
 					break;
@@ -59,7 +57,6 @@ public class GamePlay {
 					Trans.transite(nextState);
 					break;
 				case PAUSED:
-					clock.pause();
 					getInput();
 					break;
 				case MAIN_MENU:
@@ -70,7 +67,6 @@ public class GamePlay {
 					getInput();
 					break;
 				case TURN:
-					Timer.tick();
 					getInput();
 					// update stuff
 					break;
@@ -91,114 +87,115 @@ public class GamePlay {
 	}
 	
 	public static void getInput(){
-		while(Keyboard.next()){
-			int key = 0; //need somehow go around this one, but still be able to get 'null' events, for repetitive events
-			if(Keyboard.getEventKeyState())
+		int key = 0;
+		Keyboard.next();
+		if(clock.getTime() >= 0.075){
+			if(Keyboard.getEventKeyState()) //if the key is down, updates key variable to that key
 				key = Keyboard.getEventKey();
+			clock.reset();
+		}
+		System.out.println(clock.getTime());
+		//for debugging purposes
+		if (key != 0){ 
+			System.out.println("Key pressed: "+Keyboard.getKeyName(key));
+		}
 		
-			//for debugging purposes
-			if (key != 0){ 
-				System.out.println("Key pressed: "+Keyboard.getKeyName(key));
+		switch(key){
+		case Keyboard.KEY_ESCAPE:
+			switch(currentState){
+			case PAUSED:
+				transiteState("TURN");
+				break;
+			case MAIN_MENU:
+				transiteState("EXIT_GAME");
+				break;
+			case START_GAME:
+				transiteState("MAIN_MENU");
+				break;
+			case TURN:
+				transiteState("PAUSED");
+				break;
+			case GAME_OVER:
+				transiteState("HIGHSCORES");
+				break;
+			case HIGHSCORES:
+				transiteState("MAIN_MENU");
+				break;
+			default:break;
 			}
-			
-			switch(key){
-				case Keyboard.KEY_ESCAPE:
-					switch(currentState){
-						case PAUSED:
-							transiteState("TURN");
-							break;
-						case MAIN_MENU:
-							transiteState("EXIT_GAME");
-							break;
-						case START_GAME:
-							transiteState("MAIN_MENU");
-							break;
-						case TURN:
-							transiteState("PAUSED");
-							break;
-						case GAME_OVER:
-							transiteState("HIGHSCORES");
-							break;
-						case HIGHSCORES:
-							transiteState("MAIN_MENU");
-							break;
-						default:break;
-					}
-					break;
-				case Keyboard.KEY_RETURN:
-					switch(currentState){
-						case MAIN_MENU:
-							String opt = MainMenu.getState();
-							if(opt == "New Game") transiteState("START_GAME");
-					//		if(opt == "Load Game")
-					//		if(opt == "Options")
-							if(opt == "Exit Game") transiteState("EXIT_GAME");
-							break;
-						case START_GAME:
-							map = new Map();
-							player = new Player(GameStart.getState());
-							if(clock.isPaused()) clock.resume();
-							transiteState("TURN");
-							break;
-						case PAUSED:
-							player = null;
-							map = null;
-							transiteState("MAIN_MENU");
-							break;
-						default:break;
-					}
-					break;
-				case Keyboard.KEY_UP:
-					switch(currentState){
-						case MAIN_MENU:
-							MainMenu.changeState((byte) -1);
-							break;
-						case START_GAME:
-							GameStart.changeState((byte) -1);
-							break;
-						case TURN:
-							map.changeOffset(player.getFloor(), "y", -16);
-							break;
-						default:break;
-					}
-					break;
-				case Keyboard.KEY_DOWN:
-					switch(currentState){
-						case MAIN_MENU:
-							MainMenu.changeState((byte) 1);
-							break;
-						case START_GAME:
-							GameStart.changeState((byte) 1);
-							break;
-						case TURN:
-							map.changeOffset(player.getFloor(), "y", 16);
-							break;
-						default:break;
-					}
-					break;
-				case Keyboard.KEY_LEFT:
-					switch(currentState){
-						case TURN:
-							map.changeOffset(player.getFloor(), "x", 16);
-							break;
-						default:break;
-					}
-					break;
-				case Keyboard.KEY_RIGHT:
-					switch(currentState){
-						case TURN:
-							map.changeOffset(player.getFloor(), "x", -16);
-							break;
-						default:break;
-					}
-					break;
-				case Keyboard.KEY_SPACE:
-					switch(currentState){
-						default:break;
-					}
-					break;
-				default:break;
+			break;
+		case Keyboard.KEY_RETURN:
+			switch(currentState){
+			case MAIN_MENU:
+				String opt = MainMenu.getState();
+				if(opt == "New Game") transiteState("START_GAME");
+				//		if(opt == "Load Game")
+				//		if(opt == "Options")
+				if(opt == "Exit Game") transiteState("EXIT_GAME");
+				break;
+			case START_GAME:
+				map = new Map();
+				player = new Player(GameStart.getState());
+				transiteState("TURN");
+				break;
+			case PAUSED:
+				player = null;
+				map = null;
+				transiteState("MAIN_MENU");
+				break;
+			default:break;
 			}
+			break;
+		case Keyboard.KEY_UP:
+			switch(currentState){
+			case MAIN_MENU:
+				MainMenu.changeState((byte) -1);
+				break;
+			case START_GAME:
+				GameStart.changeState((byte) -1);
+				break;
+			case TURN:
+				map.changeOffset(player.getFloor(), "y", -16);
+				break;
+			default:break;
+			}
+			break;
+		case Keyboard.KEY_DOWN:
+			switch(currentState){
+			case MAIN_MENU:
+				MainMenu.changeState((byte) 1);
+				break;
+			case START_GAME:
+				GameStart.changeState((byte) 1);
+				break;
+			case TURN:
+				map.changeOffset(player.getFloor(), "y", 16);
+				break;
+			default:break;
+			}
+			break;
+		case Keyboard.KEY_LEFT:
+			switch(currentState){
+			case TURN:
+				map.changeOffset(player.getFloor(), "x", 16);
+				break;
+			default:break;
+			}
+			break;
+		case Keyboard.KEY_RIGHT:
+			switch(currentState){
+			case TURN:
+				map.changeOffset(player.getFloor(), "x", -16);
+				break;
+			default:break;
+			}
+			break;
+		case Keyboard.KEY_SPACE:
+			switch(currentState){
+			default:break;
+			}
+			break;
+		default:break;
 		}
 	}
 	
@@ -329,5 +326,6 @@ public class GamePlay {
 		Display.sync(0);
 		Display.destroy();
 		Keyboard.destroy();
+		Keyboard.enableRepeatEvents(true);
 	}
 }
