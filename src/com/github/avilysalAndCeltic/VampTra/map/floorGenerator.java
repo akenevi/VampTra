@@ -21,7 +21,7 @@ public class floorGenerator {
 					generated[i][j] = new Node(i*16, j*16, 'w');
 				else{
 					char name = 'f';
-					if(giveChance()<5) name = 's';
+					
 					generated[i][j] = new Node(i*16, j*16, name);
 				}
 				// mark border nodes
@@ -139,11 +139,14 @@ public class floorGenerator {
 			}
 		}
 		
+		
+		
 		//"solidify" walls
 		for(Node[] row : completeFloor)
-			for(Node n : row)
+			for(Node n : row){
 				if(n.getName() == 'w') n.setPassable(false);
-		
+				if(giveChance()<100 && n.getName() == 'f') n.setName('s');
+			}
 		//return reconstructed map;
 		return completeFloor;
 	}
