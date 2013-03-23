@@ -25,7 +25,7 @@ public class Trans {
 	
 	public static void render(){
 		if(!finished){
-			alpha += 0.05*incSign;
+			alpha += 0.05*2*incSign;
 			if(alpha >= 1f){
 				mid = true;
 				incSign = -1;

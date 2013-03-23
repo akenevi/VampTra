@@ -10,19 +10,22 @@ public class Map{
 	private float[] offsX, offsY;
 	
 	public Map(){
+		makeEntrance();
+		map[0] = floorGenerator.generateFloor(); //generate first floor
 		offsX = new float[10];
 		offsY = new float[10];
-		for(int i=0; i < 10; i++){
-			offsX[i] = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DW/2 - 3*16;
-			offsY[i] = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DH/2 - 3*16;
+		for(int i=0; i < 10; i++){ //set offset to the lower left corner of the dungeon
+			offsX[i] = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DW/2;
+			offsY[i] = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DH/2;
 		}
-		makeEntrance();
-		map[0] = floorGenerator.generateFloor(map[0]); //generate first floor
+		offsX[0] -= map[0].length/2*16; //set offset to the center of the floor 0
+		offsY[0] -= map[0][0].length/2*16;
 	}
 	
 	public void makeEntrance(){
-		map = new Node[10][7][7];
-		char name, dir;
+//		map = new Node[10][7][7];
+		map = new Node[10][0][0];
+/*		char name, dir;
 		for(int i=0; i<map[0].length; i++)
 			for(int j=0; j<map[0][i].length; j++){
 				name = 'f'; dir = ' ';
@@ -34,7 +37,7 @@ public class Map{
 				if (i==3 && j==6) {name = 'd'; dir = 'e';}
 				map[0][i][j] = new Node(i*16,j*16,name,dir);
 			}
-	}
+*/	}
 	
 	public boolean changeOffset(int floor, String axis, float amount){
 		float px = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.player.getX(); //400  offs initially 352
@@ -42,16 +45,16 @@ public class Map{
 		for(Node[] row : map[floor]){
 			for(Node n : row){
 				if(axis == "x" && n.y+offsY[floor]==py){
-					if(n.x+offsX[floor]==px-amount && n.passable){
+//					if(n.x+offsX[floor]==px-amount && n.passable){
 						offsX[floor]+=amount;
 						return true;
-					}
+//					}
 				}
 				if(axis == "y" && n.x+offsX[floor]==px){
-					if(n.y+offsY[floor]==py-amount && n.passable){
+//					if(n.y+offsY[floor]==py-amount && n.passable){
 						offsY[floor]+=amount;
 						return true;
-					}
+//					}
 				}
 			}
 		}
@@ -67,7 +70,7 @@ public class Map{
 					offsY[floor]+n.y>0)
 				{
 					com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawChar(n.name, n.x+offsX[floor], n.y+offsY[floor]);
-					if(!n.passable)
+					if(n.name=='w')
 						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.x+offsX[floor], n.y+offsY[floor], 16f, 1f, .1f, .1f, .4f);
 				}
 			}
