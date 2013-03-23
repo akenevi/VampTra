@@ -14,7 +14,7 @@ import com.github.avilysalAndCeltic.VampTra.utils.Renderer;
 
 public class GamePlay {
 	//state related stuff
-	private enum State {INTRO, TRANSITION, PAUSED, MAIN_MENU, START_GAME, GENERATE_ROOM, TURN, GAME_OVER, HIGHSCORES, EXIT_GAME};
+	private enum State {INTRO, TRANSITION, PAUSED, MAIN_MENU, START_GAME, TURN, GAME_OVER, HIGHSCORES, EXIT_GAME};
 	private static State currentState, prevState, nState;
 	private static String nextState = "";
 	
@@ -69,9 +69,6 @@ public class GamePlay {
 					//player creation.. choosing perk, naming, ingame intro.
 					getInput();
 					break;
-				case GENERATE_ROOM:
-					changeState("TURN");
-					break;
 				case TURN:
 					Timer.tick();
 					getInput();
@@ -94,11 +91,8 @@ public class GamePlay {
 	}
 	
 	public static void getInput(){
-		// for debugging purposes
-		// System.out.println("Waiting for keyboard event");
-		
 		while(Keyboard.next()){
-			int key = 0;
+			int key = 0; //need somehow go around this one, but still be able to get 'null' events, for repetitive events
 			if(Keyboard.getEventKeyState())
 				key = Keyboard.getEventKey();
 		
@@ -122,8 +116,6 @@ public class GamePlay {
 						case TURN:
 							transiteState("PAUSED");
 							break;
-						case GENERATE_ROOM:
-							break;
 						case GAME_OVER:
 							transiteState("HIGHSCORES");
 							break;
@@ -144,7 +136,6 @@ public class GamePlay {
 							break;
 						case START_GAME:
 							map = new Map();
-							map.makeEntrance();
 							player = new Player(GameStart.getState());
 							if(clock.isPaused()) clock.resume();
 							transiteState("TURN");
@@ -166,7 +157,7 @@ public class GamePlay {
 							GameStart.changeState((byte) -1);
 							break;
 						case TURN:
-							map.changeOffset("y", -16);
+							map.changeOffset(player.getFloor(), "y", -16);
 							break;
 						default:break;
 					}
@@ -180,7 +171,7 @@ public class GamePlay {
 							GameStart.changeState((byte) 1);
 							break;
 						case TURN:
-							map.changeOffset("y", 16);
+							map.changeOffset(player.getFloor(), "y", 16);
 							break;
 						default:break;
 					}
@@ -188,7 +179,7 @@ public class GamePlay {
 				case Keyboard.KEY_LEFT:
 					switch(currentState){
 						case TURN:
-							map.changeOffset("x", 16);
+							map.changeOffset(player.getFloor(), "x", 16);
 							break;
 						default:break;
 					}
@@ -196,7 +187,7 @@ public class GamePlay {
 				case Keyboard.KEY_RIGHT:
 					switch(currentState){
 						case TURN:
-							map.changeOffset("x", -16);
+							map.changeOffset(player.getFloor(), "x", -16);
 							break;
 						default:break;
 					}
@@ -236,7 +227,7 @@ public class GamePlay {
 				text.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)3*16, 0.7f);
 				break;
 			case TURN:
-				map.render();
+				map.render(player.getFloor());
 				player.render();
 				break;
 			default:break;
@@ -266,7 +257,7 @@ public class GamePlay {
 				text.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)3*16, 0.7f);
 				break;
 			case TURN:
-				map.render();
+				map.render(player.getFloor());
 				player.render();
 				break;
 			default:break;
@@ -281,7 +272,6 @@ public class GamePlay {
 		if (newState=="PAUSED") nState = State.PAUSED;
 		else if (newState=="MAIN_MENU") nState = State.MAIN_MENU;
 		else if (newState=="START_GAME") nState = State.START_GAME;
-		else if (newState=="GENERATE_ROOM") nState = State.GENERATE_ROOM;
 		else if (newState=="TURN") nState = State.TURN;
 		else if (newState=="GAME_OVER") nState = State.GAME_OVER;
 		else if (newState=="HIGHSCORES") nState = State.HIGHSCORES;
@@ -298,7 +288,6 @@ public class GamePlay {
 		if (newState=="PAUSED") currentState = State.PAUSED;
 		if (newState=="MAIN_MENU") currentState = State.MAIN_MENU;
 		if (newState=="START_GAME") currentState = State.START_GAME;
-		if (newState=="GENERATE_ROOM") currentState = State.GENERATE_ROOM;
 		if (newState=="TURN") currentState = State.TURN;
 		if (newState=="GAME_OVER") currentState = State.GAME_OVER;
 		if (newState=="HIGHSCORES") currentState = State.HIGHSCORES;

@@ -2,7 +2,7 @@ package com.github.avilysalAndCeltic.VampTra.entities;
 
 public class Player extends Creature{
 	private long score;
-	private int level;
+	private int floor;
 	
 	public Player(String perk){
 		initProf();
@@ -23,11 +23,11 @@ public class Player extends Creature{
 		if (perk == "scholar") { addProf("magick", 15); addProf("heal", 10); addProf("fireball", 10); }
 		this.x = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DW/2;
 		this.y = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DH/2;
-		level = 10;
+		floor = 0;
 	}
 	
-	public int getLevel(){
-		return level;
+	public int getFloor(){
+		return floor;
 	}
 	
 	public void addSkill(String skill){
