@@ -64,7 +64,8 @@ public class Renderer {
 	}
 	
 	public void drawChar(char ch, float x, float y){
-		drawSprite(Character.toString(ch), x, y, 12, 16, 0, false);
+		if(ch != ' ')
+			drawSprite(Character.toString(ch), x, y, 12, 16, 0, false);
 	}
 	
 	public void drawSprite(String name, float x, float y, int w, int h){
@@ -129,6 +130,7 @@ public class Renderer {
 			else if(i == 'g') tempY = y-2;
 			else if(i == 'p' || i == 'q') tempY = y-2;
 			else tempY = y;
+			if(name != " ")
 			drawSprite(name, (j*12)+x, tempY, 12, 16);
 			j++;    
 		}

@@ -19,7 +19,8 @@ public class GamePlay {
 	private static String nextState = "";
 	
 	//for updating entities ? dunno yet
-	private static Timer clock;
+//	private static Timer clock;
+	private static float pSpeed = 5.34f;
 	
 	//display opt
 	public static final int DW = 800;
@@ -43,7 +44,7 @@ public class GamePlay {
 	public static void gameLoop(){
 		text = new Renderer("font");
 		rend = new Renderer("");
-		clock = new Timer();
+//		clock = new Timer();
 		while(!gameExit){
 			if(Display.isCloseRequested()) currentState = State.EXIT_GAME;
 			Timer.tick();
@@ -88,18 +89,16 @@ public class GamePlay {
 	
 	public static void getInput(){
 		int key = 0;
-		Keyboard.next();
-		if(clock.getTime() >= 0.075){
-			if(Keyboard.getEventKeyState()) //if the key is down, updates key variable to that key
+		if(currentState != State.TURN){
+			while(Keyboard.next()){
+				if(Keyboard.getEventKeyState()) //if the key is down, updates key variable to that key, non-repetitive
+					key = Keyboard.getEventKey();
+			}
+		} else {
+			Keyboard.next();
+			if(Keyboard.getEventKeyState()) //if the key is down, updates key variable to that key, repetitive
 				key = Keyboard.getEventKey();
-			clock.reset();
 		}
-		System.out.println(clock.getTime());
-		//for debugging purposes
-		if (key != 0){ 
-			System.out.println("Key pressed: "+Keyboard.getKeyName(key));
-		}
-		
 		switch(key){
 		case Keyboard.KEY_ESCAPE:
 			switch(currentState){
@@ -155,7 +154,7 @@ public class GamePlay {
 				GameStart.changeState((byte) -1);
 				break;
 			case TURN:
-				map.changeOffset(player.getFloor(), "y", -16);
+				map.changeOffset(player.getFloor(), (byte) 0, pSpeed);
 				break;
 			default:break;
 			}
@@ -169,7 +168,7 @@ public class GamePlay {
 				GameStart.changeState((byte) 1);
 				break;
 			case TURN:
-				map.changeOffset(player.getFloor(), "y", 16);
+				map.changeOffset(player.getFloor(), (byte) 2, pSpeed);
 				break;
 			default:break;
 			}
@@ -177,7 +176,7 @@ public class GamePlay {
 		case Keyboard.KEY_LEFT:
 			switch(currentState){
 			case TURN:
-				map.changeOffset(player.getFloor(), "x", 16);
+				map.changeOffset(player.getFloor(), (byte) 3, pSpeed);
 				break;
 			default:break;
 			}
@@ -185,7 +184,7 @@ public class GamePlay {
 		case Keyboard.KEY_RIGHT:
 			switch(currentState){
 			case TURN:
-				map.changeOffset(player.getFloor(), "x", -16);
+				map.changeOffset(player.getFloor(), (byte) 1, pSpeed);
 				break;
 			default:break;
 			}

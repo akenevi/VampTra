@@ -3,10 +3,11 @@ package com.github.avilysalAndCeltic.VampTra.map;
 import java.util.ArrayList;
 
 public class floorGenerator {
-	private static int roomSize = 5; // this is width or length of room including 2 wall tiles
-	private static int mapSize = 15; // this make a map of mapSize x mapSize rooms, keep this an odd number for player to spawn in a room, not wall
-	private static int roomsTotal = 5; // will combine rooms until their total number equals this
-	private static int doorChance = 5; //chance to create a door bewteen rooms
+	private static int roomSize = 7; // this is width or length of room including 2 wall tiles
+	private static int mapSize = 26*2+1; //26 rooms 'till border // this make a map of mapSize x mapSize rooms, keep this an odd number for player to spawn in a room, not wall
+	private static int roomsTotal = 5; // will combine rooms until their total number equals this.... Why you don't work, roomsTotal...? Why?
+	private static int doorChance = 15; //chance to create a door between rooms
+	private static int spawnChance = 1; //chance the floor(' ') tile will change into spawn('s') tile
 	
 	public static Node[][] generateFloor(){
 		Node[][] generated = new Node[roomSize*mapSize][roomSize*mapSize];
@@ -14,16 +15,14 @@ public class floorGenerator {
 		ArrayList<Room> roomList = new ArrayList<Room>();
 		int rooms = 0;
 		
-		//generate walls('w') at regular interval, fill the rest of the map with floor tiles('f') and spawn tiles('s')
+		//generate walls('w') at regular interval, fill the rest of the map with floor tiles(' ') and spawn tiles('s')
 		for(int i=0; i<generated.length; i++){
 			for(int j=0; j<generated[i].length; j++){
 				if((i+roomSize)%roomSize==0 || i%(roomSize)==roomSize-1 || (j+roomSize)%roomSize==0 || j%(roomSize)==roomSize-1)
 					generated[i][j] = new Node(i*16, j*16, 'w');
-				else{
-					char name = 'f';
-					
-					generated[i][j] = new Node(i*16, j*16, name);
-				}
+				else
+					generated[i][j] = new Node(i*16, j*16, ' ');
+				
 				// mark border nodes
 				if(i==0 || j==0 || i==generated.length-1 || j==generated.length-1)
 					generated[i][j].setOnBorder(true);
@@ -52,14 +51,12 @@ public class floorGenerator {
 			r.updateBorders();
 
 		rooms = roomList.size();
-		//constructing crypt
-		{
-			roomList.get(roomList.size()/2).expand(roomList.get(roomList.size()/2-mapSize), (byte) 0);
-			roomList.get(roomList.size()/2).expand(roomList.get(roomList.size()/2+1), (byte) 1);
-			roomList.get(roomList.size()/2).expand(roomList.get(roomList.size()/2+mapSize), (byte) 2);
-			roomList.get(roomList.size()/2).expand(roomList.get(roomList.size()/2-1), (byte) 3);
-			rooms -= 4;
-		}
+		
+		//constructing predesigned rooms
+//		constructObelisk(roomList); 
+//		constructStairs(roomList);
+		constructCrypt(roomList);
+		rooms -= 21;
 		
 		//expand room && remove unneeded walls
 		while(rooms>roomsTotal){
@@ -83,11 +80,14 @@ public class floorGenerator {
 				expandInto = ran+mapSize;
 			else
 				expandInto = ran-1;
-			roomList.get(ran).expand(roomList.get(expandInto), direction);
 			
-			rooms -= 1;
+			if(roomList.get(ran).expand(roomList.get(expandInto), direction))
+				rooms -= 1;
 		}
-		//connect nearby two rooms that are not expanded into eachother
+		
+		cleanUp(roomList); //moved cleaning into it's own function;
+		
+		//connect nearby two rooms that are not expanded into each other, doors
 		for(Room r : roomList){
 			if(giveChance() <= doorChance-1){
 				byte direction = (byte)giveRandom(4);
@@ -113,42 +113,195 @@ public class floorGenerator {
 				int column = j/roomSize;
 				int room = (mapSize * row) + column;
 				completeFloor[i][j]=roomList.get(room).getNodes()[(i+roomSize)%roomSize][(j+roomSize)%roomSize];
+				completeFloor[i][j].setType(roomList.get(room).getType());
 			}
 		}
-		
-		//clean up 2x2 "pillars"
-		for(int i=1; i<completeFloor.length-2; i++){
-			for(int j=1; j<completeFloor[i].length-2; j++){
-				if(	completeFloor[i][j].getName() == 'w' && //find possible pillar
-					completeFloor[i][j+1].getName() == 'w' &&
-					completeFloor[i+1][j].getName() == 'w' &&
-					completeFloor[i+1][j+1].getName() == 'w' &&
-					completeFloor[i-1][j].getName() == 'f' && //verify, check for floor up
-					completeFloor[i-1][j+1].getName() == 'f' && //check for floor up
-					completeFloor[i+2][j].getName() == 'f' && //check for floor down
-					completeFloor[i+2][j+1].getName() == 'f' && //check for floor down
-					completeFloor[i][j-1].getName() == 'f' && //check for floor to the left
-					completeFloor[i+1][j-1].getName() == 'f' && //check for floor to the left
-					completeFloor[i][j+2].getName() == 'f' && //check for floor to the right
-					completeFloor[i+1][j+2].getName() == 'f'){ //check for floor to the right
-						completeFloor[i][j].setName('f');
-						completeFloor[i][j+1].setName('f');
-						completeFloor[i+1][j].setName('f');
-						completeFloor[i+1][j+1].setName('f');
-				}
-			}
-		}
-		
-		
 		
 		//"solidify" walls
 		for(Node[] row : completeFloor)
 			for(Node n : row){
 				if(n.getName() == 'w') n.setPassable(false);
-				if(giveChance()<100 && n.getName() == 'f') n.setName('s');
+				if(giveChance()<spawnChance && giveChance()<spawnChance && n.getName() == ' ') n.setName('s');
 			}
+		
+		//check if obelisk(if there is one) & stairs can be found from crypt, if not, redo.
+		
+		//test all tiles that can be accessed from crypt, assign blanks to the ones that can't
+		
 		//return reconstructed map;
 		return completeFloor;
+	}
+	
+	private static void cleanUp(ArrayList<Room> rooms){
+		// create temporary version of a map to work with
+		Node[][]temp = new Node[roomSize*mapSize][roomSize*mapSize];
+		int iterationUpon = 2;
+		int verificationCount = 0;
+		
+		for(int i=0; i<temp.length; i++){
+			for(int j=0; j<temp[0].length; j++){
+				int row = i/roomSize;
+				int column = j/roomSize;
+				int room = (mapSize * row) + column;
+				temp[i][j]=rooms.get(room).getNodes()[(i+roomSize)%roomSize][(j+roomSize)%roomSize];
+			}
+		}
+		
+		// start filtering process, will go through the whole map looking for 2x2, 2x7, 7x2, 2x12, 
+		// 12x2, 2x17 and 17x2 blocks that are straight and are not connected to any wall
+		while(iterationUpon <= 17){
+			// find possible pillar
+			boolean found = false;
+			boolean vertical = false;
+			for(int i=1; i<temp.length-iterationUpon; i++){
+				for(int j=1; j<temp[i].length-iterationUpon; j++){
+					if(temp[i][j].getName()=='w' && temp[i-1][j].getName() == ' ' && temp[i][j-1].getName() == ' '){
+					// found possible pillar, verify
+						verificationCount = 0;
+						for(int v=0; v<iterationUpon; v++){
+							if(temp[i-1][j].getName()==' ' && temp[i-1][j+1].getName()==' '){ //check for the floor above
+								if(temp[i+iterationUpon][j].getName()==' ' && temp[i+iterationUpon][j+1].getName()==' '){ //check for the floor below
+									if(temp[i+v][j].getName()=='w' && temp[i+v][j+1].getName()=='w'){ //check if it's 2 x itereationUpon block
+										if(temp[i+v][j-1].getName()==' ' && temp[i+v][j+2].getName()==' '){ //check for floor to the sides
+											verificationCount++;
+											if(verificationCount == iterationUpon){ //checked it wholly
+												found = true;
+												vertical = true;
+											}
+										}
+									}
+								}
+							}
+						}
+						verificationCount = 0;
+						for(int h=0; h<iterationUpon; h++){
+							if(temp[i][j-1].getName()==' ' && temp[i+1][j-1].getName()==' '){ //check for the to the left
+								if(temp[i][j+iterationUpon].getName()==' ' && temp[i+1][j+iterationUpon].getName()==' '){ //check for the floor to the right
+									if(temp[i][j+h].getName()=='w' && temp[i+1][j+h].getName()=='w'){ //check if it's itereationUpon x 2 block
+										if(temp[i-1][j+h].getName()==' ' && temp[i+2][j+h].getName()==' '){ //check for floor below and above
+											verificationCount++;
+											if(verificationCount == iterationUpon){ //checked it wholy
+												found = true;
+												vertical = false;
+											}
+										}
+									}
+								}
+							}
+						}
+						if(found){ 
+							// verified
+							if(vertical){
+								//corrections on vertical pillar
+								for(int v=0; v<iterationUpon; v++){
+									temp[i+v][j].setName(' ');
+									temp[i+v][j+1].setName(' ');
+								}
+							} else {
+								//corrections on horizontal pillar
+								for(int h=0; h<iterationUpon; h++){
+									temp[i][j+h].setName(' ');
+									temp[i+1][j+h].setName(' ');
+								}
+							}
+						}
+					} 
+					found = false; // rinse, repeat
+				}
+			}
+			iterationUpon+=5;
+		}
+	}
+	
+	private static void constructCrypt(ArrayList<Room> roomList){
+		// + shape with the center of the + at the center of the map
+		final int CRI = (int)(roomList.size()/2); // Central Room Index double
+		roomList.get(CRI).setType("crypt");
+		
+		roomList.get(CRI).expand(roomList.get(CRI-mapSize),(byte) 0);
+		roomList.get(CRI).expand(roomList.get(CRI+1),(byte) 1);
+		roomList.get(CRI).expand(roomList.get(CRI+mapSize),(byte) 2);
+		roomList.get(CRI).expand(roomList.get(CRI-1),(byte) 3);
+		// expanding that + to a #
+		roomList.get(CRI-mapSize).expand(roomList.get(CRI-mapSize+1),(byte) 1);
+		roomList.get(CRI-mapSize+1).expand(roomList.get(CRI-mapSize+2),(byte) 1);
+		roomList.get(CRI-mapSize+1).expand(roomList.get(CRI-mapSize*2+1),(byte) 0);
+		roomList.get(CRI-mapSize+1).expand(roomList.get(CRI+1),(byte) 2);
+		roomList.get(CRI+1).expand(roomList.get(CRI+mapSize+1),(byte) 2);
+		roomList.get(CRI+mapSize+1).expand(roomList.get(CRI+mapSize*2+1),(byte) 2);
+		roomList.get(CRI+mapSize+1).expand(roomList.get(CRI+mapSize+2),(byte) 1);
+		roomList.get(CRI+mapSize+1).expand(roomList.get(CRI+mapSize),(byte) 3);
+		roomList.get(CRI+mapSize).expand(roomList.get(CRI+mapSize-1),(byte) 3);
+		roomList.get(CRI+mapSize-1).expand(roomList.get(CRI+mapSize-2),(byte) 3);
+		roomList.get(CRI+mapSize-1).expand(roomList.get(CRI+mapSize*2-1),(byte) 2);
+		roomList.get(CRI+mapSize-1).expand(roomList.get(CRI-1),(byte) 0);
+		roomList.get(CRI-1).expand(roomList.get(CRI-mapSize-1),(byte) 0);
+		roomList.get(CRI-mapSize-1).expand(roomList.get(CRI-mapSize*2-1),(byte) 0);
+		roomList.get(CRI-mapSize-1).expand(roomList.get(CRI-mapSize-2),(byte) 3);
+		roomList.get(CRI-mapSize-1).expand(roomList.get(CRI-mapSize),(byte) 1);
+		// finishing the design layout
+		roomList.get(CRI-mapSize*2+1).expand(roomList.get(CRI-mapSize*2+2),(byte) 1);
+		roomList.get(CRI-mapSize*2+2).expand(roomList.get(CRI-mapSize+2),(byte) 2);
+		roomList.get(CRI+mapSize+2).expand(roomList.get(CRI+mapSize*2+2),(byte) 2);
+		roomList.get(CRI+mapSize*2+2).expand(roomList.get(CRI+mapSize*2+1),(byte) 3);
+		roomList.get(CRI+mapSize*2-1).expand(roomList.get(CRI+mapSize*2-2),(byte) 3);
+		roomList.get(CRI+mapSize*2-2).expand(roomList.get(CRI+mapSize-2),(byte) 0);
+		roomList.get(CRI-mapSize-2).expand(roomList.get(CRI-mapSize*2-2),(byte) 0);
+		roomList.get(CRI-mapSize*2-2).expand(roomList.get(CRI-mapSize*2-1),(byte) 1);
+		// finishing it all up, locking expansions
+		roomList.get(CRI-mapSize*2+1).setExpanded((byte)3, true);
+		roomList.get(CRI-mapSize*2+1).setExpanded((byte)0, true);
+		roomList.get(CRI-mapSize*3+1).setExpanded((byte)2, true);
+		roomList.get(CRI-mapSize*2).setExpanded((byte)1, true);
+		roomList.get(CRI-mapSize*2+2).setExpanded((byte)0, true);
+		roomList.get(CRI-mapSize*2+2).setExpanded((byte)1, true);
+		roomList.get(CRI-mapSize*3+2).setExpanded((byte)2, true);
+		roomList.get(CRI-mapSize*2+3).setExpanded((byte)3, true);
+		roomList.get(CRI-mapSize+2).setExpanded((byte)1, true);
+		roomList.get(CRI-mapSize+2).setExpanded((byte)2, true);
+		roomList.get(CRI-mapSize+3).setExpanded((byte)3, true);
+		roomList.get(CRI+2).setExpanded((byte)0, true);
+		roomList.get(CRI+mapSize+2).setExpanded((byte)0, true);
+		roomList.get(CRI+mapSize+2).setExpanded((byte)1, true);
+		roomList.get(CRI+2).setExpanded((byte)2, true);
+		roomList.get(CRI+mapSize+3).setExpanded((byte)3, true);
+		roomList.get(CRI+mapSize*2+2).setExpanded((byte)1, true);
+		roomList.get(CRI+mapSize*2+2).setExpanded((byte)2, true);
+		roomList.get(CRI+mapSize*2+3).setExpanded((byte)3, true);
+		roomList.get(CRI+mapSize*3+2).setExpanded((byte)0, true);
+		roomList.get(CRI+mapSize*2+1).setExpanded((byte)2, true);
+		roomList.get(CRI+mapSize*2+1).setExpanded((byte)3, true);
+		roomList.get(CRI+mapSize*3+1).setExpanded((byte)0, true);
+		roomList.get(CRI+mapSize*2).setExpanded((byte)1, true);
+		roomList.get(CRI+mapSize*2-1).setExpanded((byte)1, true);
+		roomList.get(CRI+mapSize*2-1).setExpanded((byte)2, true);
+		roomList.get(CRI+mapSize*2).setExpanded((byte)3, true);
+		roomList.get(CRI+mapSize*3-1).setExpanded((byte)0, true);
+		roomList.get(CRI+mapSize*2-2).setExpanded((byte)2, true);
+		roomList.get(CRI+mapSize*2-2).setExpanded((byte)3, true);
+		roomList.get(CRI+mapSize*3-2).setExpanded((byte)0, true);
+		roomList.get(CRI+mapSize*2-3).setExpanded((byte)1, true);
+		roomList.get(CRI+mapSize-2).setExpanded((byte)3, true);
+		roomList.get(CRI+mapSize-2).setExpanded((byte)0, true);
+		roomList.get(CRI+mapSize-3).setExpanded((byte)1, true);
+		roomList.get(CRI-2).setExpanded((byte)2, true);
+		roomList.get(CRI-mapSize-2).setExpanded((byte)2, true);
+		roomList.get(CRI-mapSize-2).setExpanded((byte)3, true);
+		roomList.get(CRI-2).setExpanded((byte)0, true);
+		roomList.get(CRI-mapSize-3).setExpanded((byte)1, true);
+		roomList.get(CRI-mapSize*2-2).setExpanded((byte)3, true);
+		roomList.get(CRI-mapSize*2-2).setExpanded((byte)0, true);
+		roomList.get(CRI-mapSize*2-3).setExpanded((byte)1, true);
+		roomList.get(CRI-mapSize*3-2).setExpanded((byte)2, true);
+		roomList.get(CRI-mapSize*2-1).setExpanded((byte)0, true);
+		roomList.get(CRI-mapSize*2-1).setExpanded((byte)1, true);
+		roomList.get(CRI-mapSize*3-1).setExpanded((byte)2, true);
+		roomList.get(CRI-mapSize*2).setExpanded((byte)3, true);
+		//finally, make doors
+		roomList.get(CRI-mapSize).makeDoor(roomList.get(CRI-mapSize*2),(byte) 0);
+		roomList.get(CRI+1).makeDoor(roomList.get(CRI+2),(byte) 1);
+		roomList.get(CRI+mapSize).makeDoor(roomList.get(CRI+mapSize*2),(byte) 2);
+		roomList.get(CRI-1).makeDoor(roomList.get(CRI-2),(byte) 3);
 	}
 	
 	private static int giveRandom(int upTo){

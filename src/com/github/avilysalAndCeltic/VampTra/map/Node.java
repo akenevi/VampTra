@@ -5,6 +5,7 @@ public class Node {
 	private char name;
 	private boolean passable = true;
 	private boolean onBorder = false;
+	private String type = "";
 	
 	public Node(float x, float y, char name){
 		this.x = x;
@@ -14,6 +15,10 @@ public class Node {
 	
 	public void setName(char c){
 		name = c;
+	}
+	
+	public void setType(String type){
+		this.type = type;
 	}
 	
 	public void setPassable(boolean pass){
@@ -34,6 +39,10 @@ public class Node {
 	
 	public char getName(){
 		return name;
+	}
+	
+	public String getType(){
+		return type;
 	}
 	
 	public boolean isPassable(){
