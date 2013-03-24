@@ -121,7 +121,7 @@ public class floorGenerator {
 		for(Node[] row : completeFloor)
 			for(Node n : row){
 				if(n.getName() == 'w') n.setPassable(false);
-				if(giveChance()<spawnChance && giveChance()<spawnChance && n.getName() == ' ') n.setName('s');
+				if(giveChance()<spawnChance && giveChance()<20 && n.getName() == ' ') n.setName('s');
 			}
 		
 		//check if obelisk(if there is one) & stairs can be found from crypt, if not, redo.
@@ -149,7 +149,7 @@ public class floorGenerator {
 		
 		// start filtering process, will go through the whole map looking for 2x2, 2x7, 7x2, 2x12, 
 		// 12x2, 2x17 and 17x2 blocks that are straight and are not connected to any wall
-		while(iterationUpon <= 17){
+		while(iterationUpon <= 2+4*roomSize){
 			// find possible pillar
 			boolean found = false;
 			boolean vertical = false;
@@ -209,7 +209,7 @@ public class floorGenerator {
 					found = false; // rinse, repeat
 				}
 			}
-			iterationUpon+=5;
+			iterationUpon+=roomSize;
 		}
 	}
 	
