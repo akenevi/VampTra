@@ -5,26 +5,24 @@ import java.util.ArrayList;
 import com.github.avilysalAndCeltic.VampTra.map.Node;
 
 public class PFind {
-	private ArrayList<Node> open, closed;
-	private static Node[][] map;
-	private float xInc, yInc;
-	private int jumps;
+	private static ArrayList<Node> open, closed;
+	private Node[][] map;
+	private static float xInc, yInc;
 	
-	/*
-	 *  A*
-	 *  1. Find node closest to your position and declare it start node and put it on the open list. 
-		2. While there are nodes in the open list:
-   		3. Pick the node from the open list having the smallest F score. Put it on 
-      			the closed list (you don't want to consider it again).
-   		4. For each neighbor (adjacent cell) which isn't in the closed list:
-      	5. Set its parent to current node.
-      	6. Calculate G score (distance from starting node to this neighbor) and 
-         		add it to the open list
-      	7. Calculate F score by adding heuristics to the G value.
-	 */
+	public PFind(){
+		
+	}
 	
-	public void findPath(Node[][] map, Node start, Node destination){
-		this.map = map;
+	public void setMap(Node[][] levelMap){
+		this.map = levelMap;
+	}
+	
+	public boolean canBeFound(Node from, Node node){
+		if(findPath(from, node) != null) return true;
+		else return false;
+	}
+	
+	public Node[] findPath(Node start, Node destination){
 		open = new ArrayList<Node>();
 		closed = new ArrayList<Node>();
 		
@@ -33,24 +31,24 @@ public class PFind {
 			for(Node n : row){
 				n.setForced(false);
 				n.setParent(null);
-				n.setF(manhattanDistance(n, destination));
+				n.setF(heuristics(n, destination));
 			}
 		}
 		
-		yInc = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DH / map.length;
-		xInc = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DW / map[0].length;
+		yInc = 16; //com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DH / map.length;
+		xInc = 16; //com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DW / map[0].length;
 
 		start.setG(0);
 		start.setParent(start);
 		open.add(start);
-		while (!open.isEmpty()){
+		while(!open.isEmpty()){
 			Node lowestF = open.get(0);
 			for(Node n : open){
 				if(n.getF() < lowestF.getF()) lowestF = n;
 			}
 			if(lowestF == destination){
-				System.out.println("Found path!!!");
-				break;
+				System.out.println("Found path!!!"); 
+            	return reconstructPath(lowestF);
 			}
 			closed.add(lowestF); 
 			open.remove(lowestF);
@@ -59,12 +57,13 @@ public class PFind {
 			for(Node n : succ){
 				if(!closed.contains(n)){
 					n.setParent(lowestF);
-					n.setG(Math.abs(n.getX()-lowestF.getX())/xInc + Math.abs(n.getY() - lowestF.getY()/yInc));
+					n.setG(n.getG() + Math.sqrt(Math.pow((lowestF.getX() - n.getX()), 2) + Math.pow((lowestF.getY() - n.getY()), 2)));
+					n.setF(n.getG() + heuristics(n, destination));
 					open.add(n);
-					n.setF(n.getG() + manhattanDistance(n, destination));
 				}
 			}
 		}
+		return null;
 	}
 
 	
@@ -77,7 +76,6 @@ public class PFind {
 			int dY = (int)n.getY() - (int)c.getY();
 			
 			if(jump(c, dX, dY, s, g) != null)
-				jumps = 0;
 				n = jump(c, dX, dY, s, g);
 			successors.add(n);
 		}
@@ -113,7 +111,6 @@ public class PFind {
 		ArrayList<Node> prunedNeighbors = new ArrayList<Node>();
 		float nX=node.getX();
 		float nY=node.getY();
-		
 		//nn == natural neighbors
 		Node[] nn ={getNode(nX-xInc, nY+yInc), getNode(nX, nY+yInc), getNode(nX+xInc, nY+yInc),
 					getNode(nX-xInc, nY),							 getNode(nX+xInc, nY),
@@ -128,128 +125,126 @@ public class PFind {
 		
 		if(dY == 0 && dX != 0){ //horizontal checks
 			if(dX > 0){
-				if(nn[5].isTraversable()) prunedNeighbors.add(nn[5]);
-				if(!nn[2].isTraversable()){
-					if(nn[3].isTraversable()){
-						nn[3].setForced(true);
-						prunedNeighbors.add(nn[3]);}
+				if(nn[4].isTraversable()) prunedNeighbors.add(nn[4]);
+				if(!nn[1].isTraversable()){
+					if(nn[2].isTraversable()){
+						nn[2].setForced(true);
+						prunedNeighbors.add(nn[2]);}
 				}
-				if(!nn[7].isTraversable()){
-					if(nn[8].isTraversable()){
-						nn[8].setForced(true);
-						prunedNeighbors.add(nn[8]);}
+				if(!nn[6].isTraversable()){
+					if(nn[7].isTraversable()){
+						nn[7].setForced(true);
+						prunedNeighbors.add(nn[7]);}
 				}
 			}
 			if (dX < 0){
-				if(nn[4].isTraversable()) prunedNeighbors.add(nn[4]);
-				if(!nn[2].isTraversable()){
-					if(nn[1].isTraversable()){
-						nn[1].setForced(true);
-						prunedNeighbors.add(nn[1]);}
+				if(nn[3].isTraversable()) prunedNeighbors.add(nn[3]);
+				if(!nn[1].isTraversable()){
+					if(nn[0].isTraversable()){
+						nn[0].setForced(true);
+						prunedNeighbors.add(nn[0]);}
 				}
-				if(!nn[7].isTraversable()){
-					if(nn[6].isTraversable()){
-						nn[6].setForced(true);
-						prunedNeighbors.add(nn[6]);}
+				if(!nn[6].isTraversable()){
+					if(nn[5].isTraversable()){
+						nn[5].setForced(true);
+						prunedNeighbors.add(nn[5]);}
 				}
 			}
 		}
 		if(dX == 0 && dY != 0){ //vetical checks
 			if(dY > 0){
-				if(nn[2].isTraversable()) prunedNeighbors.add(nn[2]);
-				if(!nn[4].isTraversable()){
-					if(nn[1].isTraversable()){
-						nn[1].setForced(true);
-						prunedNeighbors.add(nn[1]);}
+				if(nn[1].isTraversable()) prunedNeighbors.add(nn[1]);
+				if(!nn[3].isTraversable()){
+					if(nn[0].isTraversable()){
+						nn[0].setForced(true);
+						prunedNeighbors.add(nn[0]);}
 				}
-				if(!nn[5].isTraversable()){
-					if(nn[3].isTraversable()){
-						nn[3].setForced(true);
-						prunedNeighbors.add(nn[3]);}
+				if(!nn[4].isTraversable()){
+					if(nn[2].isTraversable()){
+						nn[2].setForced(true);
+						prunedNeighbors.add(nn[2]);}
 				}
 			}
 			if (dX < 0){
-				if(nn[7].isTraversable()) prunedNeighbors.add(nn[7]);
-				if(!nn[4].isTraversable()){
-					if(nn[6].isTraversable()){
-						nn[6].setForced(true);
-						prunedNeighbors.add(nn[6]);}
+				if(nn[6].isTraversable()) prunedNeighbors.add(nn[6]);
+				if(!nn[3].isTraversable()){
+					if(nn[5].isTraversable()){
+						nn[5].setForced(true);
+						prunedNeighbors.add(nn[5]);}
 				}
-				if(!nn[5].isTraversable()){
-					if(nn[8].isTraversable()){
-						nn[8].setForced(true);
-						prunedNeighbors.add(nn[8]);}
+				if(!nn[4].isTraversable()){
+					if(nn[7].isTraversable()){
+						nn[7].setForced(true);
+						prunedNeighbors.add(nn[7]);}
 				}
 			}
 		}
 		if(dX != 0 && dY != 0){ //diagonal checks
 			if(dX > 0 && dY > 0){
+				if(nn[1].isTraversable()) prunedNeighbors.add(nn[1]);
 				if(nn[2].isTraversable()) prunedNeighbors.add(nn[2]);
-				if(nn[3].isTraversable()) prunedNeighbors.add(nn[3]);
-				if(nn[5].isTraversable()) prunedNeighbors.add(nn[5]);
-				if(!nn[4].isTraversable()){
-					if(nn[1].isTraversable()){
-						nn[1].setForced(true);
-						prunedNeighbors.add(nn[1]);}
+				if(nn[4].isTraversable()) prunedNeighbors.add(nn[4]);
+				if(!nn[3].isTraversable()){
+					if(nn[0].isTraversable()){
+						nn[0].setForced(true);
+						prunedNeighbors.add(nn[0]);}
 				}
-				if(!nn[7].isTraversable()){
-					if(nn[8].isTraversable()){
-						nn[8].setForced(true);
-						prunedNeighbors.add(nn[8]);}
+				if(!nn[6].isTraversable()){
+					if(nn[7].isTraversable()){
+						nn[7].setForced(true);
+						prunedNeighbors.add(nn[7]);}
 				}
 			}
 			if(dX > 0 && dY < 0){
-				if(nn[5].isTraversable()) prunedNeighbors.add(nn[5]);
-				if(nn[8].isTraversable()) prunedNeighbors.add(nn[8]);
+				if(nn[4].isTraversable()) prunedNeighbors.add(nn[4]);
 				if(nn[7].isTraversable()) prunedNeighbors.add(nn[7]);
-				if(!nn[2].isTraversable()){
-					if(nn[3].isTraversable()){
-						nn[3].setForced(true);
-						prunedNeighbors.add(nn[3]);}
+				if(nn[6].isTraversable()) prunedNeighbors.add(nn[6]);
+				if(!nn[1].isTraversable()){
+					if(nn[2].isTraversable()){
+						nn[2].setForced(true);
+						prunedNeighbors.add(nn[2]);}
 				}
-				if(!nn[4].isTraversable()){
-					if(nn[6].isTraversable()){
-						nn[6].setForced(true);
-						prunedNeighbors.add(nn[6]);}
+				if(!nn[3].isTraversable()){
+					if(nn[5].isTraversable()){
+						nn[5].setForced(true);
+						prunedNeighbors.add(nn[5]);}
 				}
 			}
 			if(dX < 0 && dY < 0){
-				if(nn[4].isTraversable()) prunedNeighbors.add(nn[4]);
+				if(nn[3].isTraversable()) prunedNeighbors.add(nn[3]);
+				if(nn[5].isTraversable()) prunedNeighbors.add(nn[5]);
 				if(nn[6].isTraversable()) prunedNeighbors.add(nn[6]);
-				if(nn[7].isTraversable()) prunedNeighbors.add(nn[7]);
-				if(!nn[2].isTraversable()){
-					if(nn[1].isTraversable()){
-						nn[1].setForced(true);
-						prunedNeighbors.add(nn[1]);}
+				if(!nn[1].isTraversable()){
+					if(nn[0].isTraversable()){
+						nn[0].setForced(true);
+						prunedNeighbors.add(nn[0]);}
 				}
-				if(!nn[5].isTraversable()){
-					if(nn[8].isTraversable()){
-						nn[8].setForced(true);
-						prunedNeighbors.add(nn[8]);}
+				if(!nn[4].isTraversable()){
+					if(nn[7].isTraversable()){
+						nn[7].setForced(true);
+						prunedNeighbors.add(nn[7]);}
 				}
 			}
 			if(dX < 0 && dY > 0){
-				if(nn[4].isTraversable()) prunedNeighbors.add(nn[4]);
+				if(nn[3].isTraversable()) prunedNeighbors.add(nn[3]);
+				if(nn[0].isTraversable()) prunedNeighbors.add(nn[0]);
 				if(nn[1].isTraversable()) prunedNeighbors.add(nn[1]);
-				if(nn[2].isTraversable()) prunedNeighbors.add(nn[2]);
-				if(!nn[7].isTraversable()){
-					if(nn[6].isTraversable()){
-						nn[6].setForced(true);
-						prunedNeighbors.add(nn[6]);}
+				if(!nn[6].isTraversable()){
+					if(nn[5].isTraversable()){
+						nn[5].setForced(true);
+						prunedNeighbors.add(nn[5]);}
 				}
-				if(!nn[5].isTraversable()){
-					if(nn[3].isTraversable()){
-						nn[3].setForced(true);
-						prunedNeighbors.add(nn[3]);}
+				if(!nn[4].isTraversable()){
+					if(nn[2].isTraversable()){
+						nn[2].setForced(true);
+						prunedNeighbors.add(nn[2]);}
 				}
 			}
 		}
 		return prunedNeighbors;
 	}
 	
-	
-	/*  OLD CODE... Got too complicated, but is to the letter
-	 * 
+	/* OLD CODE follows algorithm to the letter, will complete later, just for fun...
 	// Prune rules: (if true, prune neighbor) (len = length of path; parent(x) = parent of node x; 
 	// 		neighbor = neighbor of node x, that is checked to be pruned)
 	// StraigtMove len(parent(x),...,neighbor without x) ² len(parent(x), x, neighbor)
@@ -257,11 +252,10 @@ public class PFind {
 	// forced neighbor check:
 	// len(parent(x), x, n) < len(parent(x),...,n without x)
 	
-	private ArrayList<Node> prune(Node node, int dX, int dY){
+	private ArrayList<Node> prune(Node node){
 		ArrayList<Node> prunedNeighbors = new ArrayList<Node>();
 		float nX=node.getX();
 		float nY=node.getY();
-		
 		Node parent = node.getParent();
 		Node[] naturalNeighbors = { getNode(nX-xInc, nY+yInc), getNode(nX, nY+yInc), getNode(nX+xInc, nY+yInc),
 									getNode(nX-xInc, nY),							 getNode(nX+xInc, nY),
@@ -269,46 +263,85 @@ public class PFind {
 		
 		for(Node n : naturalNeighbors){
 			if(n.isTraversable()){
-				Node[] checkAgainst = {parent, node, n};
-				if((dY == 0 && (dX == xInc || dX == -xInc)) || dX == 0 && (dY == yInc || dY == -yInc) ){ // Straight movement (1 node)
-					Node[] check = {parent, n};
-					if(!(checkLength(check) <= checkLength(checkAgainst))){
+					if(!(calcLength(parent, node , n, false) <= calcLength(parent, node , n, true))){
 						prunedNeighbors.add(n);
 					}
-				} else if((dX == xInc || dX == -xInc) && (dY == yInc || dY == -yInc)){ //Diagonal movement (1 node)
-					Node[] check = {parent, n};
-					if(!(checkLength(check) < checkLength(checkAgainst))){
-						prunedNeighbors.add(n);
-					}
-				}
 			}  // if not traversable
 		}
 		return prunedNeighbors;
 	}
 	
-	private double checkLength(Node [] nodes){
+	private double calcLength(Node pare, Node node, Node n, boolean checkAgainst){
 		double length = 0;
-		for(int i=0; i<nodes.length-1; i++){
-			if(nodes[i+1].getX()-nodes[i].getX() != 0 && nodes[i+1].getY() - nodes[i].getY() != 0){ //if it's diagonal move
-				length += Math.sqrt(2);
-			} else length += 1;  //else it's straight move
+		float px = pare.getX(); float py = pare.getY();
+		float nx = n.getX(); float ny = n.getY();
+		float dx = node.getX() - px; float dy = node.getY() - py;
+		
+		if(pare == n) return 0;
+		
+		if(nx - px == 0){
+			if (ny - py == dy){
+				
+			}
+			else if (ny - py == dy*2){
+				
+			}
 		}
+		else if(nx - px == dx){
+			if(ny - py == 0){
+				
+			}
+			else if (ny - py == dy){
+				
+			}
+			else if (ny - py == dy*2){
+				
+			}
+		}
+		else if(nx - px == dx*2){
+			if(ny - py == 0){
+				
+			}
+			else if (ny - py == dy){
+				
+			}
+			else if (ny - py == dy*2){
+				
+			}
+		}
+		
 		return length;
 	}
 	*/
-	private double manhattanDistance(Node start, Node end) {
-	    return Math.abs(end.getX() - start.getX()) + Math.abs(end.getY() - start.getY());
+	private static Node[] reconstructPath(Node current) {
+		ArrayList<Node> path = new ArrayList<Node>();
+        Node curr = current;
+        while(curr.getParent() != curr){
+            path.add(curr);
+            curr = curr.getParent();
+        }
+        Node[] foundPath = new Node[path.size()];
+        for(int i = 0; i<path.size(); i++)
+        	foundPath[(path.size()-1)-i] = path.get(i);
+        return foundPath;
+    }
+
+	
+	private static double heuristics(Node start, Node end) {
+		// manhattanHeuristic
+        return Math.abs(end.getX() - start.getX()) + Math.abs(end.getY() - start.getY());
+   /*     //diagonal manhattan
+	    double h_diagonal = Math.min(Math.abs(start.getX()-end.getX()), Math.abs(start.getY()-end.getY()));
+	    double h_straight = Math.abs(start.getX()-end.getX()) + Math.abs(start.getY()-end.getY());
+		return (Math.sqrt(2)*h_diagonal + 1*(h_straight - 2*h_diagonal));
+	 */    
 	}
 	
 	private Node getNode(float x, float y){
-		for(int i=0; i<map.length; i++){
-			if(map[i][0].getY() == y){
-				for(Node n : map[i]){
-					if(n.getX() == x)
-						return n;
-				}
-			}
-		}
+		for(Node[] row : map)
+			for(Node n : row)
+				if(n.getX() == x && n.getY() == y)
+					return n;
 		return null;
 	}
 }

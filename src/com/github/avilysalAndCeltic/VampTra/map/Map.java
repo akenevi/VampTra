@@ -81,6 +81,9 @@ public class Map{
 					else if (n.getName() == ' '){ //if floor... just sit there, doing nothing, looking pwetty
 						
 					} 
+					else if (n.getName() == 'b'){ // blank
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, 1f, .6f);
+					}
 					else //render a character that represents anything except two mentioned above
 						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawChar(n.getName(), n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed);
 					

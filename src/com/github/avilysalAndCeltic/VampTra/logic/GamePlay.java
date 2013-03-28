@@ -10,16 +10,17 @@ import org.lwjgl.opengl.DisplayMode;
 
 import com.github.avilysalAndCeltic.VampTra.entities.*;
 import com.github.avilysalAndCeltic.VampTra.map.Map;
+import com.github.avilysalAndCeltic.VampTra.utils.PFind;
 import com.github.avilysalAndCeltic.VampTra.utils.Renderer;
 
 public class GamePlay {
 	//state related stuff
-	private enum State {INTRO, TRANSITION, PAUSED, MAIN_MENU, START_GAME, TURN, GAME_OVER, HIGHSCORES, EXIT_GAME};
+	private enum State {INTRO, TRANSITION, PAUSED, MAIN_MENU, START_GAME, GENERATE_FLOOR, TURN, GAME_OVER, HIGHSCORES, EXIT_GAME};
 	private static State currentState, prevState, nState;
 	private static String nextState = "";
 	
 	//for updating entities ? dunno yet
-//	private static Timer clock;
+	private static Timer clock;
 	private static float pSpeed = 5.34f;
 	
 	//display opt
@@ -35,6 +36,7 @@ public class GamePlay {
 	public static Renderer text;
 	public static Map map;
 	public static Player player;
+	public static PFind pathFinder;
 	
 	public static void main(String args[]){
 		InitGLandDisplay();
@@ -44,7 +46,7 @@ public class GamePlay {
 	public static void gameLoop(){
 		text = new Renderer("font");
 		rend = new Renderer("");
-//		clock = new Timer();
+		clock = new Timer();
 		while(!gameExit){
 			if(Display.isCloseRequested()) currentState = State.EXIT_GAME;
 			Timer.tick();
@@ -53,6 +55,7 @@ public class GamePlay {
 				case INTRO:
 					Intro.InitIntro();
 					transiteState("MAIN_MENU");
+					pathFinder = new PFind();
 					break;
 				case TRANSITION:
 					Trans.transite(nextState);
@@ -66,6 +69,10 @@ public class GamePlay {
 				case START_GAME:
 					//player creation.. choosing perk, naming, ingame intro.
 					getInput();
+					break;
+				case GENERATE_FLOOR:
+					map = new Map();
+					transiteState("TURN");
 					break;
 				case TURN:
 					getInput();
@@ -133,9 +140,9 @@ public class GamePlay {
 				if(opt == "Exit Game") transiteState("EXIT_GAME");
 				break;
 			case START_GAME:
-				map = new Map();
 				player = new Player(GameStart.getState());
-				transiteState("TURN");
+				clock.reset();
+				transiteState("GENERATE_FLOOR");
 				break;
 			case PAUSED:
 				player = null;
@@ -217,6 +224,10 @@ public class GamePlay {
 			case START_GAME:
 				GameStart.render();
 				break;
+			case GENERATE_FLOOR:
+				text.drawString("Generating Floor", (float)DW/2-(float)17/2*12, (float)DH/2+(float)2*16);
+				text.drawShakingString("!loading screen will be added later!", (float)DW/2-(float)36/2*12, (float)DH/2-(float)3*16, 0.7f);
+				break;
 			case PAUSED:
 				text.drawString("Press ESQ to resume", (float)DW/2-(float)19/2*12, (float)DH/2+(float)2*16);
 				text.drawString("Press Enter to exit to Main Menu", (float)DW/2-(float)32/2*12, (float)DH/2+(float)0*16);
@@ -268,6 +279,7 @@ public class GamePlay {
 		if (newState=="PAUSED") nState = State.PAUSED;
 		else if (newState=="MAIN_MENU") nState = State.MAIN_MENU;
 		else if (newState=="START_GAME") nState = State.START_GAME;
+		else if (newState=="GENERATE_FLOOR") nState = State.GENERATE_FLOOR;
 		else if (newState=="TURN") nState = State.TURN;
 		else if (newState=="GAME_OVER") nState = State.GAME_OVER;
 		else if (newState=="HIGHSCORES") nState = State.HIGHSCORES;
@@ -284,6 +296,7 @@ public class GamePlay {
 		if (newState=="PAUSED") currentState = State.PAUSED;
 		if (newState=="MAIN_MENU") currentState = State.MAIN_MENU;
 		if (newState=="START_GAME") currentState = State.START_GAME;
+		if (newState=="GENERATE_FLOOR") currentState = State.GENERATE_FLOOR;
 		if (newState=="TURN") currentState = State.TURN;
 		if (newState=="GAME_OVER") currentState = State.GAME_OVER;
 		if (newState=="HIGHSCORES") currentState = State.HIGHSCORES;
