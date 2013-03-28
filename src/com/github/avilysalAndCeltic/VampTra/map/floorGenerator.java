@@ -120,13 +120,14 @@ public class floorGenerator {
 		//"solidify" walls
 		for(Node[] row : completeFloor)
 			for(Node n : row){
-				if(n.getName() == 'w') n.setPassable(false);
+				if(n.getName() == 'w') n.setTraversable(false);
 				if(giveChance()<spawnChance && giveChance()<20 && n.getName() == ' ') n.setName('s');
 			}
 		
 		//check if obelisk(if there is one) & stairs can be found from crypt, if not, redo.
 		
 		//test all tiles that can be accessed from crypt, assign blanks to the ones that can't
+		// from map[floor][1][1] to map[floor][map[floor].length-2][map[floor][map[floor].length-2].length-2]
 		
 		//return reconstructed map;
 		return completeFloor;

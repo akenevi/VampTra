@@ -31,7 +31,7 @@ public class Map{
 			for(int j=1; j<map[floor][i].length-1; j++){
 				if(map[floor][i][j].getX()+offsX[floor]==px && map[floor][i][j].getY()+offsY[floor]==py){ //is this the node we're looking for ?
 					
-					if(direction == 3 && map[floor][i-1][j].isPassable()){ //can we pass through the node we're going into, based on direction
+					if(direction == 3 && map[floor][i-1][j].isTraversable()){ //can we pass through the node we're going into, based on direction
 						pxSpeed += amount;
 						if(pxSpeed >= 16){
 							offsX[floor]+=16;
@@ -39,7 +39,7 @@ public class Map{
 						}
 						return true;
 					}
-					if(direction == 1 && map[floor][i+1][j].isPassable()){
+					if(direction == 1 && map[floor][i+1][j].isTraversable()){
 						pxSpeed -= amount;
 						if(pxSpeed <= -16){
 							offsX[floor]-=16;
@@ -47,14 +47,14 @@ public class Map{
 						}
 						return true;
 					}
-					if(direction == 2 && map[floor][i][j-1].isPassable()){
+					if(direction == 2 && map[floor][i][j-1].isTraversable()){
 						pySpeed += amount;
 						if(pySpeed >= 16){
 							offsY[floor]+=16;
 							pySpeed = 0;
 						}
 					}
-					if(direction == 0 && map[floor][i][j+1].isPassable()){
+					if(direction == 0 && map[floor][i][j+1].isTraversable()){
 						pySpeed -= amount;
 						if(pySpeed <= -16){
 							offsY[floor]-=16;

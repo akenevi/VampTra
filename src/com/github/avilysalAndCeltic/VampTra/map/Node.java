@@ -3,14 +3,23 @@ package com.github.avilysalAndCeltic.VampTra.map;
 public class Node {
 	private float x, y;
 	private char name;
-	private boolean passable = true;
+	private boolean traversable = true;
 	private boolean onBorder = false;
 	private String type = "";
+	
+	//path finding stuff
+	private Node parent;
+	private boolean forced = false;
+	private double g, f;
+	
 	
 	public Node(float x, float y, char name){
 		this.x = x;
 		this.y = y;
 		this.name = name;
+		this.parent = null;
+		this.g = 0;
+		this.f = 1;
 	}
 	
 	public void setName(char c){
@@ -21,13 +30,47 @@ public class Node {
 		this.type = type;
 	}
 	
-	public void setPassable(boolean pass){
-		passable = pass;
+	public void setTraversable(boolean pass){
+		traversable = pass;
 	}
 	
 	public void setOnBorder(boolean bord){
 		onBorder = bord;
 	}
+	
+	public void setParent(Node n){
+		parent = n;
+	}
+	
+	
+	public void setForced(boolean set){
+		forced = set;
+	}
+	
+	public void setG(double g){
+		this.g = g;
+	}
+	
+	public void setF(double d){
+		this.f = d;
+	}
+	
+	public boolean isForced(){
+		return forced;
+	}
+	
+	public double getG (){
+		return g;
+	}
+	
+	public double getF(){
+		return f;
+	}
+	
+	public Node getParent(){
+		return parent;
+	}
+	
 	
 	public float getX(){
 		return x;
@@ -45,8 +88,8 @@ public class Node {
 		return type;
 	}
 	
-	public boolean isPassable(){
-		return passable;
+	public boolean isTraversable(){
+		return traversable;
 	}
 	
 	public boolean isOnBorder(){
