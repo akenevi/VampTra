@@ -4,24 +4,42 @@ package com.github.avilysalAndCeltic.VampTra.map;
  * 	passing all the needed info to renderer, passing values to
  * 	pathfinding algorithm(if needed)..?
  */
+import com.github.avilysalAndCeltic.VampTra.map.floorGenerator;
 
 public class Map{
-	private Node[][][] map; // map[floor][row][column]; floor starting on 10 (map[9]);
-	private float[] offsX, offsY;
+	public volatile static Node[][][] map; // map[floor][row][column]; floor starting on 10 (map[9]);
+	private static float[] offsX;
+	private static float[] offsY;
 	private float pxSpeed = 0; 
-	private float pySpeed = 0; 
+	private float pySpeed = 0;
+
+	public floorGenerator fGen = new floorGenerator();
 	
 	public Map(){
+		Thread mapThread = new Thread(fGen);
+		mapThread.setDaemon(true);
+		mapThread.start();
+		
 		map = new Node[10][0][0];
-		map[0] = floorGenerator.generateFloor(); //generate first floor
 		offsX = new float[10];
 		offsY = new float[10];
 		for(int i=0; i < 10; i++){ //set offset to the lower left corner of the dungeon
 			offsX[i] = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DW/2;
 			offsY[i] = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.DH/2;
 		}
-		offsX[0] -= map[0].length/2*16; //set offset to the center of the floor 0
-		offsY[0] -= map[0][0].length/2*16;
+	}
+	
+	//public Node[][] getFloor(int floor){
+	//	return map[floor];
+	//}
+	
+	public static void adjustOffset(int floor){
+	//	com.github.avilysalAndCeltic.VampTra.logic.GamePlay.generated = false;
+	//	com.github.avilysalAndCeltic.VampTra.logic.GamePlay.generating = true;
+	//	fGen.generateFloor(floor); //generate floor
+		offsX[floor] -= map[floor].length/2*16; //set offset to the center of the floor
+		offsY[floor] -= map[floor][0].length/2*16;
+	//	com.github.avilysalAndCeltic.VampTra.logic.GamePlay.generated = true;
 	}
 	
 	public boolean changeOffset(int floor, byte direction, float amount){
@@ -82,15 +100,20 @@ public class Map{
 						
 					} 
 					else if (n.getName() == 'b'){ // blank
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, 1f, .6f);
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, 1f, 0.5f);
 					}
 					else //render a character that represents anything except two mentioned above
 						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawChar(n.getName(), n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed);
 					
-					// below are renders for predesigned rooms, later, distinctive graphics will be used
+					//path finding visual representation
+					if(n.open) //aqua
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, .6f, .7f, .5f);
+					if(n.closed) //beige
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, .7f, .5f);
 					
-					if(n.getType()=="crypt") //give a nice carpet to the crypt, including walls (manly to see the area, testing purposes)
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, 0f, .2f, .5f);
+					// below are renders for predesigned rooms, later, distinctive graphics will be used
+//					if(n.getType()=="crypt") //give a nice carpet to the crypt, including walls (manly to see the area, testing purposes)
+//						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, 0f, .2f, .5f);
 					if(n.getType()=="stairs") //yet to be implemented, color code = beige
 						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, .7f, .5f);
 					if(n.getType()=="obelisk") //yet to be implemented, color code cyan/aqua (only means of new skill acquisition)

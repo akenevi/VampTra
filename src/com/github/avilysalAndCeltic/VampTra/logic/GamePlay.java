@@ -11,6 +11,7 @@ import org.lwjgl.opengl.DisplayMode;
 import com.github.avilysalAndCeltic.VampTra.entities.*;
 import com.github.avilysalAndCeltic.VampTra.map.Map;
 import com.github.avilysalAndCeltic.VampTra.utils.PFind;
+import com.github.avilysalAndCeltic.VampTra.utils.PathFinder;
 import com.github.avilysalAndCeltic.VampTra.utils.Renderer;
 
 public class GamePlay {
@@ -20,7 +21,7 @@ public class GamePlay {
 	private static String nextState = "";
 	
 	//for updating entities ? dunno yet
-	private static Timer clock;
+	public static Timer clock;
 	private static float pSpeed = 5.34f;
 	
 	//display opt
@@ -34,9 +35,12 @@ public class GamePlay {
 	
 	public static Renderer rend;
 	public static Renderer text;
-	public static Map map;
 	public static Player player;
-	public static PFind pathFinder;
+	
+	public static PathFinder pathFind = new PathFinder();
+	public static Map map;
+	public static boolean generating = false;
+	public static boolean generated = false;
 	
 	public static void main(String args[]){
 		InitGLandDisplay();
@@ -47,15 +51,19 @@ public class GamePlay {
 		text = new Renderer("font");
 		rend = new Renderer("");
 		clock = new Timer();
+		Thread path = new Thread(pathFind);
+		path.setDaemon(true);
+		
 		while(!gameExit){
 			if(Display.isCloseRequested()) currentState = State.EXIT_GAME;
 			Timer.tick();
 			//updates
+			render();
 			switch (currentState){
 				case INTRO:
 					Intro.InitIntro();
+					path.start();
 					transiteState("MAIN_MENU");
-					pathFinder = new PFind();
 					break;
 				case TRANSITION:
 					Trans.transite(nextState);
@@ -68,11 +76,18 @@ public class GamePlay {
 					break;
 				case START_GAME:
 					//player creation.. choosing perk, naming, ingame intro.
+					if(map == null)
+						map = new Map();
 					getInput();
 					break;
 				case GENERATE_FLOOR:
-					map = new Map();
-					transiteState("TURN");
+//					if(!generating) 
+//						map.newFloor(player.getFloor());
+//					if(generated){
+//						generating = false;
+						transiteState("TURN");
+//						pathFind.setMap(map.getFloor(player.getFloor()));
+//					}
 					break;
 				case TURN:
 					getInput();
@@ -88,7 +103,6 @@ public class GamePlay {
 					System.out.println("Exiting game");
 					break;
 			}
-			render();
 		//	System.out.println("update!");
 		}
 		CleanUp();

@@ -1,15 +1,21 @@
 package com.github.avilysalAndCeltic.VampTra.map;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-public class floorGenerator {
-	private static int roomSize = 3; // this is width or length of room including 2 wall tiles
-	private static int mapSize = 4*2+1; //26 rooms 'till border // this make a map of mapSize x mapSize rooms, keep this an odd number for player to spawn in a room, not wall
+public class floorGenerator implements Runnable{
+	private static int roomSize = 7; // this is width or length of room including 2 wall tiles
+	private static int mapSize = 26*2+1; //26 rooms 'till border // this make a map of mapSize x mapSize rooms, keep this an odd number for player to spawn in a room, not wall
 	private static int roomsTotal = 5; // will combine rooms until their total number equals this.... Why you don't work, roomsTotal...? Why?
 	private static int doorChance = 15; //chance to create a door between rooms
 	private static int spawnChance = 1; //chance the floor(' ') tile will change into spawn('s') tile
 	
-	public static Node[][] generateFloor(){
+	public void run(){
+		System.out.println("Floor Generator is runnning");
+		generateFloor(0);
+	}
+	
+	public void generateFloor(int floor){
 		Node[][] generated = new Node[roomSize*mapSize][roomSize*mapSize];
 		Node[][] completeFloor = new Node[roomSize*mapSize][roomSize*mapSize];
 		ArrayList<Room> roomList = new ArrayList<Room>();
@@ -117,35 +123,37 @@ public class floorGenerator {
 			}
 		}
 		
+		System.out.println("Size of this floor is "+ completeFloor.length*completeFloor[0].length);
+		
 		//"solidify" walls
 		for(Node[] row : completeFloor)
 			for(Node n : row){
 				if(n.getName() == 'w') n.setTraversable(false);
 				if(giveChance()<spawnChance && giveChance()<20 && n.getName() == ' ') n.setName('s');
 			}
-		
+		com.github.avilysalAndCeltic.VampTra.logic.GamePlay.clock.reset();
+		com.github.avilysalAndCeltic.VampTra.map.Map.map[floor] = completeFloor;
+		com.github.avilysalAndCeltic.VampTra.map.Map.adjustOffset(floor);
 		//check if obelisk(if there is one) & stairs can be found from crypt, if not, redo.
-		
+		DecimalFormat df = new DecimalFormat("###.########");
+		com.github.avilysalAndCeltic.VampTra.logic.GamePlay.pathFind.setMap(completeFloor);
 		//test all tiles that can be accessed from crypt, assign blanks to the ones that can't
 		// from map[floor][1][1] to map[floor][map[floor].length-2][map[floor][map[floor].length-2].length-2]
-		Node checkFrom = completeFloor[mapSize*roomSize/2][mapSize*roomSize/2];
-		com.github.avilysalAndCeltic.VampTra.logic.GamePlay.pathFinder.setMap(completeFloor);
 		for(int i=1; i<completeFloor.length-1; i++){
 			for(int j=1; j<completeFloor[completeFloor.length-1].length-1; j++){
-				System.out.println("checking node at x: "+completeFloor[i][j].getX()+", y: "+completeFloor[i][j].getY());
-				if(completeFloor[i][j].isTraversable()){
-					if(com.github.avilysalAndCeltic.VampTra.logic.GamePlay.pathFinder.canBeFound(checkFrom, completeFloor[i][j]) == false){
-						float nnx = completeFloor[i][j].getX(); float nny = completeFloor[i][j].getY();
-						completeFloor[i][j] = new Node(nnx, nny, 'b');
-						completeFloor[i][j].setTraversable(false);
-					} else {
-						checkFrom = completeFloor[i][j];
-					}
-				}
+				if(completeFloor[i][j].isTraversable() && com.github.avilysalAndCeltic.VampTra.logic.GamePlay.pathFind.canBeFound(completeFloor[mapSize*roomSize/2][mapSize*roomSize/2], completeFloor[i][j]) == false)
+				{
+					completeFloor[i][j].setName('b');
+					completeFloor[i][j].setTraversable(false);
+				} 
+				System.out.println("Check on "+((i*completeFloor.length)+j)+" out of "+(completeFloor.length*completeFloor[0].length)+" complete, "+df.format(((double)((i*completeFloor.length)+j)/(double)(completeFloor.length*completeFloor[0].length))*100)+"% done");
+
+				com.github.avilysalAndCeltic.VampTra.map.Map.map[floor] = completeFloor;
 			}
 		}
 		//return reconstructed map;
-		return completeFloor;
+		float time = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.clock.getTime();
+		System.out.println("Time it took to finish map "+time+"sec; "+(time/(completeFloor.length*completeFloor[0].length))+"sec / 1 tile");
 	}
 	
 	private static void cleanUp(ArrayList<Room> rooms){

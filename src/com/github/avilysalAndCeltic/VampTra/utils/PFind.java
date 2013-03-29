@@ -6,23 +6,16 @@ import com.github.avilysalAndCeltic.VampTra.map.Node;
 
 public class PFind {
 	private static ArrayList<Node> open, closed;
-	private Node[][] map;
+	private static Node[][] map;
 	private static float xInc, yInc;
 	
-	public PFind(){
-		
-	}
-	
-	public void setMap(Node[][] levelMap){
-		this.map = levelMap;
-	}
-	
-	public boolean canBeFound(Node from, Node node){
-		if(findPath(from, node) != null) return true;
+	public static boolean canBeFound(Node[][] cMap, Node from, Node node){
+		if(findPath(cMap, from, node) != null) return true;
 		else return false;
 	}
 	
-	public Node[] findPath(Node start, Node destination){
+	public static Node[] findPath(Node[][] cMap, Node start, Node destination){
+		map = cMap;
 		open = new ArrayList<Node>();
 		closed = new ArrayList<Node>();
 		
@@ -56,10 +49,12 @@ public class PFind {
 			ArrayList<Node> succ = identifySuccessors(lowestF, start, destination);
 			for(Node n : succ){
 				if(!closed.contains(n)){
-					n.setParent(lowestF);
-					n.setG(n.getG() + Math.sqrt(Math.pow((lowestF.getX() - n.getX()), 2) + Math.pow((lowestF.getY() - n.getY()), 2)));
-					n.setF(n.getG() + heuristics(n, destination));
-					open.add(n);
+					if(!open.contains(n)){
+						n.setParent(lowestF);
+						n.setG(n.getG() + Math.sqrt(Math.pow((lowestF.getX() - n.getX()), 2) + Math.pow((lowestF.getY() - n.getY()), 2)));
+						n.setF(n.getG() + heuristics(n, destination));
+						open.add(n);
+					}
 				}
 			}
 		}
@@ -67,7 +62,7 @@ public class PFind {
 	}
 
 	
-	private ArrayList<Node> identifySuccessors(Node c, Node s, Node g){
+	private static ArrayList<Node> identifySuccessors(Node c, Node s, Node g){
 		ArrayList<Node> successors = new ArrayList<Node>();
 		ArrayList<Node> neighbors = prune(c, 0, 0);
 		
@@ -82,7 +77,7 @@ public class PFind {
 		return successors;
 	}
 	
-	private Node jump(Node initial, int dX, int dY, Node s, Node g){
+	private static Node jump(Node initial, int dX, int dY, Node s, Node g){
 		Node next = getNode(initial.getX()+dX, initial.getY()+dY);
 		
 		if(next.isTraversable() == false)
@@ -98,7 +93,7 @@ public class PFind {
 		return jump(next, dX, dY, s, g);
 	}
 
-	private boolean hasForced(Node node, int dX, int dY){
+	private static boolean hasForced(Node node, int dX, int dY){
 		ArrayList<Node> prunedNeighbors = prune(node, dX, dY);
 		boolean forced = false;
 		for(Node n : prunedNeighbors){
@@ -107,7 +102,7 @@ public class PFind {
 		return forced;
 	}
 	
-	private ArrayList<Node> prune(Node node, int dX, int dY){
+	private static ArrayList<Node> prune(Node node, int dX, int dY){
 		ArrayList<Node> prunedNeighbors = new ArrayList<Node>();
 		float nX=node.getX();
 		float nY=node.getY();
@@ -241,6 +236,9 @@ public class PFind {
 				}
 			}
 		}
+//		for(Node n : nn){
+//			if(!prunedNeighbors.contains(n) && n != getNode(nX+dX, nY+dY)) closed.add(n);
+//		}
 		return prunedNeighbors;
 	}
 	
@@ -337,7 +335,7 @@ public class PFind {
 	 */    
 	}
 	
-	private Node getNode(float x, float y){
+	private static Node getNode(float x, float y){
 		for(Node[] row : map)
 			for(Node n : row)
 				if(n.getX() == x && n.getY() == y)

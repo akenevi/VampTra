@@ -12,6 +12,9 @@ public class Node {
 	private boolean forced = false;
 	private double g, f;
 	
+	//path finding visual representstion/debugging stuff
+	public boolean open = false;
+	public boolean closed = false;
 	
 	public Node(float x, float y, char name){
 		this.x = x;
