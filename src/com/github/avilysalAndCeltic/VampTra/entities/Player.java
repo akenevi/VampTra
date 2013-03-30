@@ -30,12 +30,17 @@ public class Player extends Creature{
 		return floor;
 	}
 	
+	public void setFloor(int f){
+		floor = f;
+	}
+	
 	public void addSkill(String skill){
 		skills.add(skill);
 	}
 	
 	public void update(){
-		
+		if(com.github.avilysalAndCeltic.VampTra.logic.GamePlay.map.checkForStairs(floor, x, y))
+			System.out.println("Current floor : "+(-10+floor+1));
 	}
 	
 	public void render(){

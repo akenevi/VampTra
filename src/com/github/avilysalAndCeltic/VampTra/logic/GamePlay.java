@@ -10,7 +10,6 @@ import org.lwjgl.opengl.DisplayMode;
 
 import com.github.avilysalAndCeltic.VampTra.entities.*;
 import com.github.avilysalAndCeltic.VampTra.map.Map;
-import com.github.avilysalAndCeltic.VampTra.utils.PFind;
 import com.github.avilysalAndCeltic.VampTra.utils.PathFinder;
 import com.github.avilysalAndCeltic.VampTra.utils.Renderer;
 
@@ -39,7 +38,6 @@ public class GamePlay {
 	
 	public static PathFinder pathFind = new PathFinder();
 	public static Map map;
-	public static boolean generating = false;
 	public static boolean generated = false;
 	
 	public static void main(String args[]){
@@ -76,21 +74,16 @@ public class GamePlay {
 					break;
 				case START_GAME:
 					//player creation.. choosing perk, naming, ingame intro.
-					if(map == null)
-						map = new Map();
 					getInput();
 					break;
 				case GENERATE_FLOOR:
-//					if(!generating) 
-//						map.newFloor(player.getFloor());
-//					if(generated){
-//						generating = false;
+					if(generated){
 						transiteState("TURN");
-//						pathFind.setMap(map.getFloor(player.getFloor()));
-//					}
+					}
 					break;
 				case TURN:
 					getInput();
+					player.update();
 					// update stuff
 					break;
 				case GAME_OVER:
@@ -148,13 +141,14 @@ public class GamePlay {
 			switch(currentState){
 			case MAIN_MENU:
 				String opt = MainMenu.getState();
-				if(opt == "New Game") transiteState("START_GAME");
+				if(opt == "New Game") {transiteState("START_GAME"); clock.reset();}
 				//		if(opt == "Load Game")
 				//		if(opt == "Options")
 				if(opt == "Exit Game") transiteState("EXIT_GAME");
 				break;
 			case START_GAME:
 				player = new Player(GameStart.getState());
+				map = new Map();
 				clock.reset();
 				transiteState("GENERATE_FLOOR");
 				break;

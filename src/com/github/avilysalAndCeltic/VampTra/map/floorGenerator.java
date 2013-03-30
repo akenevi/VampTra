@@ -1,18 +1,38 @@
 package com.github.avilysalAndCeltic.VampTra.map;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class floorGenerator implements Runnable{
-	private static int roomSize = 7; // this is width or length of room including 2 wall tiles
+	private static int roomSize = 7; // this is width or length of room including 2 wall tiles, keep this as an odd number
 	private static int mapSize = 26*2+1; //26 rooms 'till border // this make a map of mapSize x mapSize rooms, keep this an odd number for player to spawn in a room, not wall
 	private static int roomsTotal = 5; // will combine rooms until their total number equals this.... Why you don't work, roomsTotal...? Why?
 	private static int doorChance = 15; //chance to create a door between rooms
 	private static int spawnChance = 1; //chance the floor(' ') tile will change into spawn('s') tile
 	
+	private static boolean[] floorDone = new boolean[10];
+	
+	//pathfinding between vital rooms stuff
+	private static Node cryptCentralNode = null;
+	private static Node stairsCentralNode = null;
+	private static Node obeliskCentralNode = null;
+	
 	public void run(){
 		System.out.println("Floor Generator is runnning");
-		generateFloor(0);
+		for(int i=0; i<floorDone.length; i++)
+			floorDone[i] = false;
+		while(true){
+			if (floorDone[com.github.avilysalAndCeltic.VampTra.logic.GamePlay.player.getFloor()])
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			else{
+				com.github.avilysalAndCeltic.VampTra.logic.GamePlay.generated = false;
+				com.github.avilysalAndCeltic.VampTra.logic.GamePlay.transiteState("GENERATE_FLOOR");
+				generateFloor(com.github.avilysalAndCeltic.VampTra.logic.GamePlay.player.getFloor());
+			}
+		}
 	}
 	
 	public void generateFloor(int floor){
@@ -32,6 +52,70 @@ public class floorGenerator implements Runnable{
 				// mark border nodes
 				if(i==0 || j==0 || i==generated.length-1 || j==generated.length-1)
 					generated[i][j].setOnBorder(true);
+			}
+		}
+		
+		//set neighboring nodes
+		for(int i=0; i<generated.length; i++){
+			for(int j=0; j<generated[i].length; j++){
+				ArrayList<Node> neigh = new ArrayList<Node>();
+				if(i == 0){
+					if(j == 0)
+					{
+													 neigh.add(generated[i+1][j]);
+						neigh.add(generated[i][j+1]);neigh.add(generated[i+1][j+1]);
+					}
+					else if(j == generated[i].length-1)
+					{
+						neigh.add(generated[i][j-1]);neigh.add(generated[i+1][j-1]);
+													 neigh.add(generated[i+1][j]);
+					}
+					else
+					{
+						neigh.add(generated[i][j-1]);neigh.add(generated[i+1][j-1]);
+													 neigh.add(generated[i+1][j]);
+						neigh.add(generated[i][j+1]);neigh.add(generated[i+1][j+1]);
+					}
+				}else if(i == generated.length-1){
+					if(j == 0)
+					{
+						neigh.add(generated[i-1][j]);
+						neigh.add(generated[i-1][j+1]);neigh.add(generated[i][j+1]);
+					}
+					else if(j == generated[i].length-1)
+					{
+						neigh.add(generated[i-1][j-1]);neigh.add(generated[i][j-1]);
+						neigh.add(generated[i-1][j]);
+					}
+					else
+					{
+						neigh.add(generated[i-1][j-1]);neigh.add(generated[i][j-1]);
+						neigh.add(generated[i-1][j]);
+						neigh.add(generated[i-1][j+1]);neigh.add(generated[i][j+1]);
+					}
+				}else{
+					if(j == 0)
+					{
+						neigh.add(generated[i-1][j]);								neigh.add(generated[i+1][j]);
+						neigh.add(generated[i-1][j+1]);neigh.add(generated[i][j+1]);neigh.add(generated[i+1][j+1]);
+					}
+					else if(j == generated[i].length-1)
+					{
+						neigh.add(generated[i-1][j-1]);neigh.add(generated[i][j-1]);neigh.add(generated[i+1][j-1]);
+						neigh.add(generated[i-1][j]);								neigh.add(generated[i+1][j]);
+					}
+					else
+					{
+						neigh.add(generated[i-1][j-1]);neigh.add(generated[i][j-1]);neigh.add(generated[i+1][j-1]);
+						neigh.add(generated[i-1][j]);								neigh.add(generated[i+1][j]);
+						neigh.add(generated[i-1][j+1]);neigh.add(generated[i][j+1]);neigh.add(generated[i+1][j+1]);
+					}
+				}
+				Node[] neighbors = new Node[neigh.size()];
+				for(int k=0; k<neigh.size(); k++){
+					neighbors[k] = neigh.get(k);
+				}
+				generated[i][j].setNeighbors(neighbors);
 			}
 		}
 		
@@ -60,7 +144,7 @@ public class floorGenerator implements Runnable{
 		
 		//constructing predesigned rooms
 //		constructObelisk(roomList); 
-//		constructStairs(roomList);
+		constructStairs(roomList);
 		constructCrypt(roomList);
 		rooms -= 21;
 		
@@ -131,11 +215,19 @@ public class floorGenerator implements Runnable{
 				if(n.getName() == 'w') n.setTraversable(false);
 				if(giveChance()<spawnChance && giveChance()<20 && n.getName() == ' ') n.setName('s');
 			}
-		com.github.avilysalAndCeltic.VampTra.logic.GamePlay.clock.reset();
-		com.github.avilysalAndCeltic.VampTra.map.Map.map[floor] = completeFloor;
-		com.github.avilysalAndCeltic.VampTra.map.Map.adjustOffset(floor);
+		
 		//check if obelisk(if there is one) & stairs can be found from crypt, if not, redo.
-		DecimalFormat df = new DecimalFormat("###.########");
+		com.github.avilysalAndCeltic.VampTra.logic.GamePlay.pathFind.setMap(completeFloor);
+		if(com.github.avilysalAndCeltic.VampTra.logic.GamePlay.pathFind.canBeFound(cryptCentralNode, stairsCentralNode) == false)
+			generateFloor(floor);
+		else{
+			com.github.avilysalAndCeltic.VampTra.map.Map.map[floor] = completeFloor;
+			com.github.avilysalAndCeltic.VampTra.map.Map.adjustOffset(floor);
+			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.generated = true;
+			floorDone[floor] = true;
+			spawnChance += 2;
+		}
+/*			
 		com.github.avilysalAndCeltic.VampTra.logic.GamePlay.pathFind.setMap(completeFloor);
 		//test all tiles that can be accessed from crypt, assign blanks to the ones that can't
 		// from map[floor][1][1] to map[floor][map[floor].length-2][map[floor][map[floor].length-2].length-2]
@@ -151,9 +243,9 @@ public class floorGenerator implements Runnable{
 				com.github.avilysalAndCeltic.VampTra.map.Map.map[floor] = completeFloor;
 			}
 		}
-		//return reconstructed map;
+*/		//return reconstructed map;
 		float time = com.github.avilysalAndCeltic.VampTra.logic.GamePlay.clock.getTime();
-		System.out.println("Time it took to finish map "+time+"sec; "+(time/(completeFloor.length*completeFloor[0].length))+"sec / 1 tile");
+		System.out.println("Time took to finish map "+time+"sec");
 	}
 	
 	private static void cleanUp(ArrayList<Room> rooms){
@@ -239,8 +331,10 @@ public class floorGenerator implements Runnable{
 	
 	private static void constructCrypt(ArrayList<Room> roomList){
 		// + shape with the center of the + at the center of the map
-		final int CRI = (int)(roomList.size()/2); // Central Room Index double
+		final int CRI = (int)(roomList.size()/2); // Central Room Index
 		roomList.get(CRI).setType("crypt");
+		cryptCentralNode = roomList.get(CRI).getNodes()[roomSize/2][roomSize/2];
+		cryptCentralNode.setStairsDown(true);
 		
 		roomList.get(CRI).expand(roomList.get(CRI-mapSize),(byte) 0);
 		roomList.get(CRI).expand(roomList.get(CRI+1),(byte) 1);
@@ -326,6 +420,48 @@ public class floorGenerator implements Runnable{
 		roomList.get(CRI+1).makeDoor(roomList.get(CRI+2),(byte) 1);
 		roomList.get(CRI+mapSize).makeDoor(roomList.get(CRI+mapSize*2),(byte) 2);
 		roomList.get(CRI-1).makeDoor(roomList.get(CRI-2),(byte) 3);
+	}
+	
+	private static void constructStairs(ArrayList<Room> roomList){
+		int centerRoomY = 3;
+		int centerRoomX = 3;
+//		while (centerRoomY < 3)
+//			centerRoomY = giveRandom(mapSize-3);
+//		while (centerRoomX < 3)
+//			centerRoomX = giveRandom(mapSize-3);
+		
+		final int CRI = centerRoomX*mapSize+centerRoomY; // Central Room Index
+		roomList.get(CRI).setType("stairs");
+		stairsCentralNode = roomList.get(CRI).getNodes()[roomSize/2][roomSize/2];
+		stairsCentralNode.setStairsUp(true);
+		
+		roomList.get(CRI).expand(roomList.get(CRI-mapSize),(byte) 0);
+		roomList.get(CRI).expand(roomList.get(CRI+1),(byte) 1);
+		roomList.get(CRI).expand(roomList.get(CRI+mapSize),(byte) 2);
+		roomList.get(CRI).expand(roomList.get(CRI-1),(byte) 3);
+		
+		roomList.get(CRI-mapSize).makeDoor(roomList.get(CRI-mapSize*2),(byte) 0);
+		roomList.get(CRI+1).makeDoor(roomList.get(CRI+2),(byte) 1);
+		roomList.get(CRI+mapSize).makeDoor(roomList.get(CRI+mapSize*2),(byte) 2);
+		roomList.get(CRI-1).makeDoor(roomList.get(CRI-2),(byte) 3);
+		
+		roomList.get(CRI-mapSize).setExpanded((byte)3, true);
+		roomList.get(CRI-mapSize).setExpanded((byte)1, true);
+		roomList.get(CRI+1).setExpanded((byte)0, true);
+		roomList.get(CRI+1).setExpanded((byte)2, true);
+		roomList.get(CRI+mapSize).setExpanded((byte)1, true);
+		roomList.get(CRI+mapSize).setExpanded((byte)3, true);
+		roomList.get(CRI-1).setExpanded((byte)2, true);
+		roomList.get(CRI-1).setExpanded((byte)0, true);
+		
+		roomList.get(CRI-mapSize+1).setExpanded((byte)3, true);
+		roomList.get(CRI-mapSize+1).setExpanded((byte)2, true);
+		roomList.get(CRI+mapSize+1).setExpanded((byte)0, true);
+		roomList.get(CRI+mapSize+1).setExpanded((byte)3, true);
+		roomList.get(CRI+mapSize-1).setExpanded((byte)0, true);
+		roomList.get(CRI+mapSize-1).setExpanded((byte)1, true);
+		roomList.get(CRI-mapSize-1).setExpanded((byte)1, true);
+		roomList.get(CRI-mapSize-1).setExpanded((byte)2, true);
 	}
 	
 	private static int giveRandom(int upTo){

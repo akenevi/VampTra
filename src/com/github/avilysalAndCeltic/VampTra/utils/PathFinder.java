@@ -13,8 +13,8 @@ public class PathFinder implements Runnable {
 	private HashSet<Node> closed;
 	private Node[][] map;
 	
-	private int yInc = 16;
-	private int xInc = 16;
+//	private int yInc = 16;
+//	private int xInc = 16;
 	
 	@Override
 	public void run() {
@@ -46,7 +46,7 @@ public class PathFinder implements Runnable {
 		}
 
 		closed = new HashSet<Node>();
-		open = new PriorityQueue<Node>(20,new Comparator<Node>() {
+		open = new PriorityQueue<Node>(5,new Comparator<Node>() {
 			public int compare(Node n1, Node n2){
 				if(n1.getF() < n2.getF()){
 		            return -1;
@@ -76,13 +76,14 @@ public class PathFinder implements Runnable {
 			
 			current.closed = true;
 			
-			Node [] neighbors = getNeighbors(current);
+			Node [] neighbors = current.getNeighbors();
 			for(Node n : neighbors){
 				if(n.isTraversable() == false){
 					closed.add(n);
+					n.closed = true;
 					continue;
 				}
-				if(closed.contains(n))
+				if(n.closed)
 					continue;
 				
 				double tenG = current.getG() + getDistance(current, n);
@@ -98,7 +99,7 @@ public class PathFinder implements Runnable {
 				}
 			}
 		}
-		System.out.println("No paht found.");
+		System.out.println("No path found.");
 		return null;
 	}
 	
@@ -107,6 +108,7 @@ public class PathFinder implements Runnable {
 		Node temp = current;
         while(temp.getParent() != temp){
             path.add(temp);
+            temp.setName('p'); //mark found path, for now
             temp = temp.getParent();
         }
         Node[] foundPath = new Node[path.size()]; // reverse the queue
@@ -114,26 +116,6 @@ public class PathFinder implements Runnable {
         	foundPath[(path.size()-1)-i] = path.get(i);
         return foundPath;
     }
-	
-	private Node[] getNeighbors(Node node){
-		float nX=node.getX();
-		float nY=node.getY();
-		
-		Node[] nn ={getNode(nX-xInc, nY+yInc), getNode(nX, nY+yInc), getNode(nX+xInc, nY+yInc),
-					getNode(nX-xInc, nY),							 getNode(nX+xInc, nY),
-					getNode(nX-xInc, nY-yInc), getNode(nX, nY-yInc), getNode(nX+xInc, nY-yInc)};
-		return nn;
-	}
-	
-	private Node getNode (float x, float y){
-		for(Node[] row : map){
-			for(Node n : row){
-				if(n.getX() == x && n.getY() == y) return n;
-			}
-		}
-		System.out.println("Could not fing node at x:"+x+" y:"+y);
-		return null;
-	}
 	
 	private double getDistance(Node from, Node to){
 		return Math.sqrt(Math.pow((from.getX() - to.getX()), 2) + Math.pow((from.getY() - to.getY()), 2));

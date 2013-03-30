@@ -6,8 +6,11 @@ public class Node {
 	private boolean traversable = true;
 	private boolean onBorder = false;
 	private String type = "";
+	private boolean stairsUp = false;
+	private boolean stairsDown = false;
 	
 	//path finding stuff
+	private Node[] neighbors;
 	private Node parent;
 	private boolean forced = false;
 	private double g, f;
@@ -45,7 +48,6 @@ public class Node {
 		parent = n;
 	}
 	
-	
 	public void setForced(boolean set){
 		forced = set;
 	}
@@ -56,6 +58,30 @@ public class Node {
 	
 	public void setF(double d){
 		this.f = d;
+	}
+	
+	public void setNeighbors(Node[] neighbors){
+		this.neighbors = neighbors;
+	}
+	
+	public void setStairsUp(boolean s){
+		stairsUp = s;
+	}
+	
+	public void setStairsDown(boolean s){
+		stairsDown = s;
+	}
+	
+	public boolean isStairsDown(){
+		return stairsDown;
+	}
+	
+	public boolean isStairsUp(){
+		return stairsUp;
+	}
+	
+	public Node[] getNeighbors(){
+		return neighbors;
 	}
 	
 	public boolean isForced(){
