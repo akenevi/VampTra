@@ -27,7 +27,7 @@ public abstract class Creature extends Entity{
 	public void attackMelee(Creature c){
 		byte damage = 0; //for now
 		if(getProf("melee") - c.getProf("dodge") < 0){
-			if(com.github.avilysalAndCeltic.VampTra.logic.GamePlay.rend.random.nextInt(100) > 100-5){
+			if(com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.random.nextInt(100) > 100-5){
 				c.changeHealth((byte)(-1*damage));
 				// inform about successful hit
 			} else {
@@ -38,7 +38,7 @@ public abstract class Creature extends Entity{
 			int block = getProf("block");
 			if(c.hasShield())
 				block += c.getProf("shiled");
-			if(com.github.avilysalAndCeltic.VampTra.logic.GamePlay.rend.random.nextInt(100) > 100-block){
+			if(com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.random.nextInt(100) > 100-block){
 				c.changeHealth((byte)(-1*damage));
 				c.changeArmor((byte)(-1*damage/5));
 				// inform about successful hit

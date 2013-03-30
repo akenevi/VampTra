@@ -1,12 +1,8 @@
 package com.github.avilysalAndCeltic.VampTra.logic;
 
-import static org.lwjgl.opengl.ARBTextureRectangle.GL_TEXTURE_RECTANGLE_ARB;
-import static org.lwjgl.opengl.GL11.*;
-
 import org.lwjgl.util.Timer;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
 
 import com.github.avilysalAndCeltic.VampTra.entities.*;
 import com.github.avilysalAndCeltic.VampTra.map.Map;
@@ -32,25 +28,28 @@ public class GamePlay {
 	
 	private static boolean gameExit = false;
 	
-	public static Renderer rend;
-	public static Renderer text;
+	public static Renderer render = new Renderer();
+	
 	public static Player player;
+	public static Map map;
 	
 	public static PathFinder pathFind = new PathFinder();
-	public static Map map;
 	public static boolean generated = false;
 	
 	public static void main(String args[]){
-		InitGLandDisplay();
-		startGame();
+		Thread renderer = new Thread(render);
+		renderer.setDaemon(true);
+		renderer.setName("Graphics Thread");
+		renderer.start();
+		if(render.startUp(DW, DH, fps, isResizable, vSync))
+			startGame();
 	}
 	
 	public static void gameLoop(){
-		text = new Renderer("font");
-		rend = new Renderer("");
 		clock = new Timer();
 		Thread path = new Thread(pathFind);
 		path.setDaemon(true);
+		path.setName("Pathfinding Thread");
 		
 		while(!gameExit){
 			if(Display.isCloseRequested()) currentState = State.EXIT_GAME;
@@ -98,7 +97,7 @@ public class GamePlay {
 			}
 		//	System.out.println("update!");
 		}
-		CleanUp();
+		render.CleanUp();
 	}
 	
 	public static void getInput(){
@@ -213,14 +212,8 @@ public class GamePlay {
 		}
 	}
 	
-	private static void preRender(){
-		//clearing old stuff
-		glClear(GL_COLOR_BUFFER_BIT);
-		glLoadIdentity();
-	}
-	
 	private static void render(){
-		preRender();
+		render.preRender();
 		
 		switch(currentState){
 			case TRANSITION:
@@ -233,13 +226,13 @@ public class GamePlay {
 				GameStart.render();
 				break;
 			case GENERATE_FLOOR:
-				text.drawString("Generating Floor", (float)DW/2-(float)17/2*12, (float)DH/2+(float)2*16);
-				text.drawShakingString("!loading screen will be added later!", (float)DW/2-(float)36/2*12, (float)DH/2-(float)3*16, 0.7f);
+				render.drawString("Generating Floor", (float)DW/2-(float)17/2*12, (float)DH/2+(float)2*16);
+				render.drawShakingString("!loading screen will be added later!", (float)DW/2-(float)36/2*12, (float)DH/2-(float)3*16, 0.7f);
 				break;
 			case PAUSED:
-				text.drawString("Press ESQ to resume", (float)DW/2-(float)19/2*12, (float)DH/2+(float)2*16);
-				text.drawString("Press Enter to exit to Main Menu", (float)DW/2-(float)32/2*12, (float)DH/2+(float)0*16);
-				text.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)3*16, 0.7f);
+				render.drawString("Press ESQ to resume", (float)DW/2-(float)19/2*12, (float)DH/2+(float)2*16);
+				render.drawString("Press Enter to exit to Main Menu", (float)DW/2-(float)32/2*12, (float)DH/2+(float)0*16);
+				render.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)3*16, 0.7f);
 				break;
 			case TURN:
 				map.render(player.getFloor());
@@ -247,11 +240,7 @@ public class GamePlay {
 				break;
 			default:break;
 		}
-		
-		{	//swap buffers, poll new input and finally autotune (Display.sync(fps)) Thread sleep to meet stated fps
-			Display.update();
-			Display.sync(fps);
-		}
+		render.afterRender();
 	}
 	
 	private static void transRender(){
@@ -267,9 +256,9 @@ public class GamePlay {
 				GameStart.render();
 				break;
 			case PAUSED:
-				text.drawString("Press ESQ to resume", (float)DW/2-(float)19/2*12, (float)DH/2+(float)2*16);
-				text.drawString("Press Enter to exit to Main Menu", (float)DW/2-(float)32/2*12, (float)DH/2+(float)0*16);
-				text.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)3*16, 0.7f);
+				render.drawString("Press ESQ to resume", (float)DW/2-(float)19/2*12, (float)DH/2+(float)2*16);
+				render.drawString("Press Enter to exit to Main Menu", (float)DW/2-(float)32/2*12, (float)DH/2+(float)0*16);
+				render.drawShakingString("!actual menu will be added later!", (float)DW/2-(float)33/2*12, (float)DH/2-(float)3*16, 0.7f);
 				break;
 			case TURN:
 				map.render(player.getFloor());
@@ -316,36 +305,5 @@ public class GamePlay {
 		currentState = State.INTRO;
 		prevState = State.INTRO;
 		gameLoop();
-	}
-	
-	private static void InitGLandDisplay(){
-		try{
-			Display.setDisplayMode(new DisplayMode(DW,DH));
-			Display.create();
-			Display.setResizable(isResizable);
-			Display.setVSyncEnabled(vSync);
-			Keyboard.create();
-		} catch (Exception e) {
-			System.err.println("Failed to create window");
-		}
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0,DW,0,DH,-1,1);
-		
-		glEnable(GL_TEXTURE_RECTANGLE_ARB);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
-		glClearColor(0,0,0,1);
-		glDisable(GL_DEPTH_TEST);
-		
-		glMatrixMode(GL_MODELVIEW);
-	}
-	
-	private static void CleanUp(){
-		Display.sync(0);
-		Display.destroy();
-		Keyboard.destroy();
-		Keyboard.enableRepeatEvents(true);
 	}
 }

@@ -124,34 +124,34 @@ public class Map{
 					offsY[floor]+n.getY()>0)
 				{
 					if(n.getName()=='w') //if wall, render a red-ish rectangle
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, 0f, .05f, 1f);
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, 0f, .05f, 1f);
 					else if (n.getName() == ' '){ //if floor... just sit there, doing nothing, looking pwetty
-						
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .5f, .5f, .8f, .2f);
 					} 
 					else if (n.getName() == 'p'){ // path
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, 0f, .5f);
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, 0f, .5f);
 					}
 					else //render a character that represents anything except two mentioned above
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.drawChar(n.getName(), n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed);
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.drawChar(n.getName(), n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed);
 					
 					//path finding visual representation
 //					if(n.open) //aqua
-//						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, .6f, .7f, .5f);
+//						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, .6f, .7f, .5f);
 //					if(n.closed) //beige
-//						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, .7f, .2f);
+//						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, .7f, .2f);
 					
 					if(n.isStairsUp())
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 0f, 1f, .1f, .5f);
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 0f, 1f, .1f, .5f);
 					if(n.isStairsDown())
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 0f, 1f, .1f, .5f);
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 0f, 1f, .1f, .5f);
 					
 					// below are renders for predesigned rooms, later, distinctive graphics will be used
 					if(n.getType()=="crypt") //give a nice carpet to the crypt, including walls (manly to see the area, testing purposes)
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, 0f, .2f, .5f);
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, 0f, .2f, .5f);
 					if(n.getType()=="stairs") //yet to be implemented, color code = beige
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, .7f, .5f);
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, 1f, 1f, .7f, .5f);
 					if(n.getType()=="obelisk") //yet to be implemented, color code cyan/aqua (only means of new skill acquisition)
-						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.text.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, .6f, .7f, .5f);
+						com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(n.getX()+offsX[floor]+pxSpeed, n.getY()+offsY[floor]+pySpeed, 16f, .3f, .6f, .7f, .5f);
 				}
 			}
 		}

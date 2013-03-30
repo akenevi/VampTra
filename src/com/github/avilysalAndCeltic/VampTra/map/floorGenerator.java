@@ -465,10 +465,10 @@ public class floorGenerator implements Runnable{
 	}
 	
 	private static int giveRandom(int upTo){
-		return	com.github.avilysalAndCeltic.VampTra.logic.GamePlay.rend.random.nextInt(upTo);
+		return	com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.random.nextInt(upTo);
 	}
 	
 	private static int giveChance(){
-		return com.github.avilysalAndCeltic.VampTra.logic.GamePlay.rend.random.nextInt(100);
+		return com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.random.nextInt(100);
 	}
 }

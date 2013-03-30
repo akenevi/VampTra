@@ -14,13 +14,13 @@ public class GameStart {
 	private static byte state = 1;
 			
 	public static void render(){
-		GamePlay.text.drawString(message, x, y);
-		if (state == 1) GamePlay.text.drawShakingString(opt1, x, y-40, shakingMagnitude);
-		else GamePlay.text.drawString(opt1, x, y-40);
-		if (state == 2) GamePlay.text.drawShakingString(opt2, x, y-60, shakingMagnitude);
-		else GamePlay.text.drawString(opt2, x, y-60);
-		if (state == 3) GamePlay.text.drawShakingString(opt3, x, y-80, shakingMagnitude);
-		else GamePlay.text.drawString(opt3, x, y-80);
+		GamePlay.render.drawString(message, x, y);
+		if (state == 1) GamePlay.render.drawShakingString(opt1, x, y-40, shakingMagnitude);
+		else GamePlay.render.drawString(opt1, x, y-40);
+		if (state == 2) GamePlay.render.drawShakingString(opt2, x, y-60, shakingMagnitude);
+		else GamePlay.render.drawString(opt2, x, y-60);
+		if (state == 3) GamePlay.render.drawShakingString(opt3, x, y-80, shakingMagnitude);
+		else GamePlay.render.drawString(opt3, x, y-80);
 	}
 	
 	public static void changeState(byte n){

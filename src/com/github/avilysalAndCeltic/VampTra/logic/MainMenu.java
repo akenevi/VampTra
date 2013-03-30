@@ -24,20 +24,20 @@ public class MainMenu {
 	
 	public static void render(){
 		if(s == 1)
-			GamePlay.text.drawShakingString("New Game", posX, posY+51, shakingMagnitudeMultiplyer);
+			GamePlay.render.drawShakingString("New Game", posX, posY+51, shakingMagnitudeMultiplyer);
 		else
-			GamePlay.text.drawString("New Game", posX, posY+51);
+			GamePlay.render.drawString("New Game", posX, posY+51);
 		if(s == 2)
-			GamePlay.text.drawShakingString("Load Game", posX, posY+34, shakingMagnitudeMultiplyer);
+			GamePlay.render.drawShakingString("Load Game", posX, posY+34, shakingMagnitudeMultiplyer);
 		else
-			GamePlay.text.drawString("Load Game", posX, posY+34);
+			GamePlay.render.drawString("Load Game", posX, posY+34);
 		if(s == 3)
-			GamePlay.text.drawShakingString("Options", posX, posY+17, shakingMagnitudeMultiplyer);
+			GamePlay.render.drawShakingString("Options", posX, posY+17, shakingMagnitudeMultiplyer);
 		else
-			GamePlay.text.drawString("Options", posX, posY+17);
+			GamePlay.render.drawString("Options", posX, posY+17);
 		if(s == 4)
-			GamePlay.text.drawShakingString("Exit Game", posX, posY, shakingMagnitudeMultiplyer);
+			GamePlay.render.drawShakingString("Exit Game", posX, posY, shakingMagnitudeMultiplyer);
 		else
-			GamePlay.text.drawString("Exit Game", posX, posY);
+			GamePlay.render.drawString("Exit Game", posX, posY);
 	}
 }

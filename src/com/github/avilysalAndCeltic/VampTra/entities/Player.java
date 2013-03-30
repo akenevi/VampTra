@@ -44,7 +44,7 @@ public class Player extends Creature{
 	}
 	
 	public void render(){
-		com.github.avilysalAndCeltic.VampTra.logic.GamePlay.rend.createQuad(x, y, 16f);
+		com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(x, y, 16f);
 	}
 
 	public long getScore(){

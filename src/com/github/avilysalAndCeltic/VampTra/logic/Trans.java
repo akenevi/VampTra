@@ -31,7 +31,7 @@ public class Trans {
 				incSign = -1;
 			}
 			if(alpha <= 0) finished = true;
-			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.rend.createQuad(w/2, h/2, w, h, 0f, 0f, 0f, alpha);
+			com.github.avilysalAndCeltic.VampTra.logic.GamePlay.render.createQuad(w/2, h/2, w, h, 0f, 0f, 0f, alpha);
 		}
 		transite(nextState);
 	}
